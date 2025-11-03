@@ -133,8 +133,7 @@ namespace LoneArenaDmaRadar
         /// <summary>
         /// Configure Program Startup.
         /// </summary>
-        private async Task ConfigureProgramAsync(LoadingWindow loadingWindow) =>
-        await Task.Run(async () =>
+        private async Task ConfigureProgramAsync(LoadingWindow loadingWindow)
         {
             await loadingWindow.ViewModel.UpdateProgressAsync(15, "Loading, Please Wait...");
             var updater = CheckForUpdatesAsync(loadingWindow);
@@ -153,7 +152,7 @@ namespace LoneArenaDmaRadar
             await Task.WhenAll(updater, eftMapManager, memoryInterface, misc);
             await loadingWindow.ViewModel.UpdateProgressAsync(100, "Loading Completed!");
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-        });
+        }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
