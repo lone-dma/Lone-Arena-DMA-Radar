@@ -48,7 +48,7 @@ namespace LoneArenaDmaRadar.DMA
     {
         #region Init
 
-        private const string MEMORY_MAP_FILE = "mmap.txt";
+        private const string MEMORY_MAP_FILE = @"..\mmap.txt";
         private const string GAME_PROCESS_NAME = "EscapeFromTarkovArena.exe";
         internal const uint MAX_READ_SIZE = 0x1000u * 1500u;
         private readonly Vmm _vmm;
