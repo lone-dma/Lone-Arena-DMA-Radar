@@ -29,6 +29,7 @@ SOFTWARE.
 using LoneArenaDmaRadar.UI.ColorPicker;
 using LoneArenaDmaRadar.UI.Hotkeys;
 using LoneArenaDmaRadar.UI.Misc;
+using LoneArenaDmaRadar.UI.Radar.Maps;
 using LoneArenaDmaRadar.UI.Radar.Views;
 using LoneArenaDmaRadar.UI.Skia;
 using System.Windows.Input;
@@ -136,7 +137,7 @@ namespace LoneArenaDmaRadar.UI.Radar.ViewModels
         {
             try
             {
-                var backupFile = ArenaDmaConfig.Filename + ".bak";
+                var backupFile = $@"..\{ArenaDmaConfig.Filename}.bak";
                 if (File.Exists(backupFile) &&
                     MessageBox.Show(MainWindow.Instance, "Overwrite backup?", "Backup Config", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     return;
