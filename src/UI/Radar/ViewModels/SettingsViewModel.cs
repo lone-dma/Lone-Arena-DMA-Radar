@@ -137,7 +137,7 @@ namespace LoneArenaDmaRadar.UI.Radar.ViewModels
         {
             try
             {
-                var backupFile = $@"..\{ArenaDmaConfig.Filename}.bak";
+                var backupFile = Path.Combine(App.ConfigPath.FullName, $"{ArenaDmaConfig.Filename}.userbak");
                 if (File.Exists(backupFile) &&
                     MessageBox.Show(MainWindow.Instance, "Overwrite backup?", "Backup Config", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     return;
