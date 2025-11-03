@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11123.170 d18.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lone-Arena-DMA-Radar", "Lone-Arena-DMA-Radar.csproj", "{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Debug|x64.ActiveCfg = Debug|x64
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Debug|x64.Build.0 = Debug|x64
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Release|x64.ActiveCfg = Release|x64
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B57E22B5-BEEE-41A1-810D-AF57D089C6E6}
+	EndGlobalSection
+EndGlobal
