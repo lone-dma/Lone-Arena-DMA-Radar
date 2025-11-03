@@ -52,7 +52,7 @@ namespace LoneArenaDmaRadar.UI.Radar.ViewModels
             OpenHotkeyManagerCommand = new SimpleCommand(OnOpenHotkeyManager);
             OpenColorPickerCommand = new SimpleCommand(OnOpenColorPicker);
             BackupConfigCommand = new SimpleCommand(OnBackupConfig);
-            SaveConfigCommand = new SimpleCommand(OnSaveConfig);
+            OpenConfigCommand = new SimpleCommand(OnOpenConfig);
             SetScaleValues(UIScale);
         }
 
@@ -151,17 +151,16 @@ namespace LoneArenaDmaRadar.UI.Radar.ViewModels
             }
         }
 
-        public ICommand SaveConfigCommand { get; }
-        private async void OnSaveConfig()
+        public ICommand OpenConfigCommand { get; }
+        private async void OnOpenConfig()
         {
             try
             {
-                await App.Config.SaveAsync();
-                MessageBox.Show(MainWindow.Instance, $"Config saved to {App.ConfigPath.FullName}", "Save Config");
+                Process.Start(new ProcessStartInfo(App.ConfigPath.FullName) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(MainWindow.Instance, $"Error: {ex.Message}", "Save Config", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(MainWindow.Instance, $"Error: {ex.Message}", "Open Config", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
