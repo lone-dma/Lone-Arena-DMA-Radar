@@ -213,6 +213,8 @@ namespace LoneArenaDmaRadar
                     source: new GithubSource("https://github.com/lone-dma/Lone-Arena-DMA-Radar",
                         accessToken: null,
                         prerelease: false));
+                if (!updater.IsInstalled)
+                    return;
 
                 var newVersion = await updater.CheckForUpdatesAsync();
                 if (newVersion is not null)
