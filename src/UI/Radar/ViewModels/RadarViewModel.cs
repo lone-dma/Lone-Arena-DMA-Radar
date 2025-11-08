@@ -92,7 +92,7 @@ namespace LoneArenaDmaRadar.UI.Radar.ViewModels
             {
                 var players = AllPlayers
                     .Where(x => x is not Arena.GameWorld.Player.LocalPlayer
-                        && !x.HasExfild) ?? 
+                        && !x.HasExfild) ??
                         Enumerable.Empty<AbstractPlayer>();
 
                 return players;
@@ -335,7 +335,7 @@ namespace LoneArenaDmaRadar.UI.Radar.ViewModels
         private static void SetMapName()
         {
             string map = EftMapManager.Map?.Config?.Name;
-            string name = map is null ? 
+            string name = map is null ?
                 "Radar" : $"Radar ({map})";
             if (MainWindow.Instance?.RadarTab is TabItem tab)
             {

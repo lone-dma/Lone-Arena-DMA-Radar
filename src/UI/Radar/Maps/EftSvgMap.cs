@@ -107,9 +107,9 @@ namespace LoneArenaDmaRadar.UI.Radar.Maps
                     paint = SKPaints.PaintBitmap;
                 }
                 canvas.DrawImage(
-                    image: layer.Image, 
-                    source: mapBounds, 
-                    dest: windowBounds, 
+                    image: layer.Image,
+                    source: mapBounds,
+                    dest: windowBounds,
                     paint: paint,
                     sampling: _sampling);
             }

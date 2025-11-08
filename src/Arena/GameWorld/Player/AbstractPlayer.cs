@@ -599,11 +599,11 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             canvas.DrawPath(_playerPill, SKPaints.ShapeOutline); // outline
             canvas.DrawPath(_playerPill, paints.Item1);
 
-            var aimlineLength = this == localPlayer ? 
+            var aimlineLength = this == localPlayer ?
                 App.Config.UI.AimLineLength : 0;
             // High Alert -> Check if aiming at Local Player
             if (App.Config.UI.HighAlert &&
-                !IsFriendly && 
+                !IsFriendly &&
                 this.IsFacingTarget(localPlayer))
                 aimlineLength = 9999;
 

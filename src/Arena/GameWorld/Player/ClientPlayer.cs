@@ -52,7 +52,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             AccountID = GetAccountID();
             TeamID = GetTeamID();
             if (LocalGameWorld.MatchHasTeams)
-                ArgumentOutOfRangeException.ThrowIfEqual(TeamID, -1, nameof(TeamID)); 
+                ArgumentOutOfRangeException.ThrowIfEqual(TeamID, -1, nameof(TeamID));
             MovementContext = GetMovementContext();
             RotationAddress = ValidateRotationAddr(MovementContext + Offsets.MovementContext._rotation);
             /// Setup Transform

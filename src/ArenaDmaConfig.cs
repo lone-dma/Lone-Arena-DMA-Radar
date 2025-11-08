@@ -37,8 +37,8 @@ namespace LoneArenaDmaRadar
     /// </summary>
     public sealed class ArenaDmaConfig
     {
-        private static readonly JsonSerializerOptions _jsonOptions = new() 
-        { 
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
             WriteIndented = true
         };
         /// <summary>
@@ -88,10 +88,10 @@ namespace LoneArenaDmaRadar
         /// <summary>
         /// Filename of this Config File (not full path).
         /// </summary>
-        [JsonIgnore] 
+        [JsonIgnore]
         internal const string Filename = "Config-Arena.json";
 
-        [JsonIgnore] 
+        [JsonIgnore]
         private static readonly Lock _syncRoot = new();
 
         [JsonIgnore]
@@ -118,7 +118,7 @@ namespace LoneArenaDmaRadar
                 if (_configFile.Exists)
                 {
                     config = TryLoad(_tempFile) ??
-                        TryLoad(_configFile) ?? 
+                        TryLoad(_configFile) ??
                         TryLoad(_backupFile);
 
                     if (config is null)
@@ -149,7 +149,7 @@ namespace LoneArenaDmaRadar
         {
             try
             {
-                if (!file.Exists) 
+                if (!file.Exists)
                     return null;
                 string json = File.ReadAllText(file.FullName);
                 return JsonSerializer.Deserialize<ArenaDmaConfig>(json, _jsonOptions);
@@ -212,10 +212,10 @@ namespace LoneArenaDmaRadar
             else
             {
                 File.Copy(
-                    sourceFileName: _tempFile.FullName, 
+                    sourceFileName: _tempFile.FullName,
                     destFileName: _backupFile.FullName);
                 File.Move(
-                    sourceFileName: _tempFile.FullName, 
+                    sourceFileName: _tempFile.FullName,
                     destFileName: _configFile.FullName);
             }
         }

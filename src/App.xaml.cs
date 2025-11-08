@@ -50,7 +50,6 @@ using LoneArenaDmaRadar.UI.Misc;
 using LoneArenaDmaRadar.UI.Radar.Maps;
 using LoneArenaDmaRadar.UI.Skia;
 using Velopack;
-using Velopack.Sources;
 
 namespace LoneArenaDmaRadar
 {
