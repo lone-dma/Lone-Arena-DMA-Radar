@@ -29,7 +29,6 @@ SOFTWARE.
 using LoneArenaDmaRadar.UI.ColorPicker;
 using LoneArenaDmaRadar.UI.Hotkeys;
 using LoneArenaDmaRadar.UI.Misc;
-using LoneArenaDmaRadar.UI.Radar.Maps;
 using LoneArenaDmaRadar.UI.Radar.Views;
 using LoneArenaDmaRadar.UI.Skia;
 using System.Windows.Input;

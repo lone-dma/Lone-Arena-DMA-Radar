@@ -65,7 +65,7 @@ namespace LoneArenaDmaRadar.Arena.Unity.Structures
             /// Populate Indices once for the Life of the Transform.
             _indices = ReadIndices();
         }
-        
+
         private ReadOnlySpan<int> Indices
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

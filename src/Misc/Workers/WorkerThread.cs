@@ -120,7 +120,7 @@ namespace LoneArenaDmaRadar.Misc.Workers
                     else if (shouldSleep)
                     {
                         Thread.Sleep(SleepDuration);
-                    }    
+                    }
                 }
             }
             Debug.WriteLine($"[WorkerThread] '{Name}' thread stopping...");
