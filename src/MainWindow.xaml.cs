@@ -28,8 +28,6 @@ SOFTWARE.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
-using Velopack;
-using Velopack.Sources;
 
 namespace LoneArenaDmaRadar
 {
@@ -62,12 +60,6 @@ namespace LoneArenaDmaRadar
                 this.WindowState = WindowState.Normal;
             DataContext = ViewModel = new MainWindowViewModel(this);
             Instance = this;
-            this.Loaded += MainWindow_Loaded;
-        }
-
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            _ = CheckForUpdatesAsync(this);
         }
 
         /// <summary>
@@ -132,45 +124,6 @@ namespace LoneArenaDmaRadar
             finally
             {
                 base.OnPreviewMouseWheel(e);
-            }
-        }
-
-        private static async Task CheckForUpdatesAsync(Window parent)
-        {
-            try
-            {
-                var updater = new UpdateManager(
-                    source: new GithubSource("https://github.com/lone-dma/Lone-Arena-DMA-Radar",
-                        accessToken: null,
-                        prerelease: false));
-                if (!updater.IsInstalled)
-                    return;
-
-                var newVersion = await updater.CheckForUpdatesAsync();
-                if (newVersion is not null)
-                {
-                    var result = MessageBox.Show(
-                        parent,
-                        $"A new version ({newVersion.TargetFullRelease.Version}) is available.\n\nWould you like to update now?",
-                        App.Name,
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        await updater.DownloadUpdatesAsync(newVersion);
-                        updater.ApplyUpdatesAndRestart(newVersion);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    parent,
-                    $"An unhandled exception occurred while checking for updates: {ex}",
-                    App.Name,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
             }
         }
     }
