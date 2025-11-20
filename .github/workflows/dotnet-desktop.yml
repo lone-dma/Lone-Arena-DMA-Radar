@@ -24,7 +24,7 @@ jobs:
     environment: production
 
     steps:
-      - name: Send Discord start message
+      - name: Send Discord Webhook
         shell: pwsh
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
