@@ -53,7 +53,7 @@ using Velopack;
 using Velopack.Sources;
 
 namespace LoneArenaDmaRadar
-{
+{ 
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
