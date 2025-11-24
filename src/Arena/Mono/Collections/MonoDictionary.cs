@@ -27,7 +27,6 @@ SOFTWARE.
 */
 
 using Collections.Pooled;
-using LoneArenaDmaRadar.DMA;
 
 namespace LoneArenaDmaRadar.Arena.Mono.Collections
 {
@@ -56,7 +55,7 @@ namespace LoneArenaDmaRadar.Arena.Mono.Collections
         /// <returns></returns>
         public static MonoDictionary<TKey, TValue> Create(ulong addr, bool useCache = true)
         {
-            var count = MemoryInterface.Memory.ReadValue<int>(addr + CountOffset, useCache);
+            var count = LoneArenaDmaRadar.DMA.Memory.ReadValue<int>(addr + CountOffset, useCache);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(count, 16384, nameof(count));
             var dict = new MonoDictionary<TKey, TValue>(count);
             try
@@ -65,8 +64,8 @@ namespace LoneArenaDmaRadar.Arena.Mono.Collections
                 {
                     return dict;
                 }
-                var dictBase = MemoryInterface.Memory.ReadPtr(addr + EntriesOffset, useCache) + EntriesStartOffset;
-                MemoryInterface.Memory.ReadSpan(dictBase, dict.Span, useCache); // Single read into mem buffer
+                var dictBase = LoneArenaDmaRadar.DMA.Memory.ReadPtr(addr + EntriesOffset, useCache) + EntriesStartOffset;
+                LoneArenaDmaRadar.DMA.Memory.ReadSpan(dictBase, dict.Span, useCache); // Single read into mem buffer
                 return dict;
             }
             catch

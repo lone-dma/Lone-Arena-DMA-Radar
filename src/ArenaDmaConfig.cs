@@ -27,7 +27,6 @@ SOFTWARE.
 */
 
 using LoneArenaDmaRadar.Arena.Unity.Structures;
-using LoneArenaDmaRadar.DMA;
 using LoneArenaDmaRadar.UI.ColorPicker;
 
 namespace LoneArenaDmaRadar

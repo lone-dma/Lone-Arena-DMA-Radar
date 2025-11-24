@@ -55,8 +55,6 @@ SOFTWARE.
  *
 */
 
-using LoneArenaDmaRadar.DMA;
-
 namespace LoneArenaDmaRadar.Arena.Mono
 {
     internal static class MonoLib
@@ -72,8 +70,8 @@ namespace LoneArenaDmaRadar.Arena.Mono
 
         static MonoLib()
         {
-            MemDMA.ProcessStarting += MemDMA_ProcessStarting;
-            MemDMA.ProcessStopped += MemDMA_ProcessStopped;
+            Memory.ProcessStarting += MemDMA_ProcessStarting;
+            Memory.ProcessStopped += MemDMA_ProcessStopped;
         }
 
         private static void MemDMA_ProcessStarting(object sender, EventArgs e)

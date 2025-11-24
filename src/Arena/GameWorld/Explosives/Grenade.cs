@@ -29,7 +29,6 @@ SOFTWARE.
 using LoneArenaDmaRadar.Arena.GameWorld.Player;
 using LoneArenaDmaRadar.Arena.Unity;
 using LoneArenaDmaRadar.Arena.Unity.Structures;
-using LoneArenaDmaRadar.DMA;
 using LoneArenaDmaRadar.Misc;
 using LoneArenaDmaRadar.UI.Radar.Maps;
 using LoneArenaDmaRadar.UI.Skia;

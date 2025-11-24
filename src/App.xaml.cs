@@ -44,7 +44,6 @@ global using System.Text;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
 global using System.Windows;
-using LoneArenaDmaRadar.DMA;
 using LoneArenaDmaRadar.UI.ColorPicker;
 using LoneArenaDmaRadar.UI.Misc;
 using LoneArenaDmaRadar.UI.Radar.Maps;
@@ -134,7 +133,7 @@ namespace LoneArenaDmaRadar
             await loadingWindow.ViewModel.UpdateProgressAsync(15, "Loading, Please Wait...");
             _ = Task.Run(CheckForUpdatesAsync); // Run continuations on the thread pool
             var eftMapManager = EftMapManager.ModuleInitAsync();
-            var memoryInterface = MemoryInterface.ModuleInitAsync();
+            var memoryInterface = Memory.ModuleInitAsync();
             var misc = Task.Run(() =>
             {
                 IsDarkMode = GetIsDarkMode();

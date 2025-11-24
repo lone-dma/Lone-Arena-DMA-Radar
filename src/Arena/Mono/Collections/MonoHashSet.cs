@@ -27,7 +27,6 @@ SOFTWARE.
 */
 
 using Collections.Pooled;
-using LoneArenaDmaRadar.DMA;
 
 namespace LoneArenaDmaRadar.Arena.Mono.Collections
 {
@@ -54,7 +53,7 @@ namespace LoneArenaDmaRadar.Arena.Mono.Collections
         /// <returns></returns>
         public static MonoHashSet<T> Create(ulong addr, bool useCache = true)
         {
-            var count = MemoryInterface.Memory.ReadValue<int>(addr + CountOffset, useCache);
+            var count = LoneArenaDmaRadar.DMA.Memory.ReadValue<int>(addr + CountOffset, useCache);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(count, 16384, nameof(count));
             var hs = new MonoHashSet<T>(count);
             try
@@ -63,8 +62,8 @@ namespace LoneArenaDmaRadar.Arena.Mono.Collections
                 {
                     return hs;
                 }
-                var hashSetBase = MemoryInterface.Memory.ReadPtr(addr + ArrOffset, useCache) + ArrStartOffset;
-                MemoryInterface.Memory.ReadSpan(hashSetBase, hs.Span, useCache);
+                var hashSetBase = LoneArenaDmaRadar.DMA.Memory.ReadPtr(addr + ArrOffset, useCache) + ArrStartOffset;
+                LoneArenaDmaRadar.DMA.Memory.ReadSpan(hashSetBase, hs.Span, useCache);
                 return hs;
             }
             catch
