@@ -27,7 +27,6 @@ SOFTWARE.
 */
 
 using LoneArenaDmaRadar.Arena.Unity.Structures;
-using LoneArenaDmaRadar.DMA;
 using LoneArenaDmaRadar.Misc.Workers;
 using LoneArenaDmaRadar.UI.Hotkeys;
 using VmmSharpEx.Scatter;
@@ -42,8 +41,8 @@ namespace LoneArenaDmaRadar.Arena.Unity
 
         static InputManager()
         {
-            MemDMA.ProcessStarting += MemDMA_ProcessStarting;
-            MemDMA.ProcessStopped += MemDMA_ProcessStopped;
+            Memory.ProcessStarting += MemDMA_ProcessStarting;
+            Memory.ProcessStopped += MemDMA_ProcessStopped;
         }
 
         private static void MemDMA_ProcessStarting(object sender, EventArgs e)

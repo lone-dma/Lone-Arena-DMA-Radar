@@ -30,7 +30,6 @@ using Collections.Pooled;
 using LoneArenaDmaRadar.Arena.Mono.Collections;
 using LoneArenaDmaRadar.Arena.Unity;
 using LoneArenaDmaRadar.Arena.Unity.Structures;
-using LoneArenaDmaRadar.DMA;
 using LoneArenaDmaRadar.Misc;
 using LoneArenaDmaRadar.UI.Radar.Maps;
 using LoneArenaDmaRadar.UI.Skia;
@@ -57,7 +56,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
 
         static AbstractPlayer()
         {
-            MemDMA.RaidStopped += MemDMA_RaidStopped;
+            Memory.RaidStopped += MemDMA_RaidStopped;
         }
 
         private static void MemDMA_RaidStopped(object sender, EventArgs e)

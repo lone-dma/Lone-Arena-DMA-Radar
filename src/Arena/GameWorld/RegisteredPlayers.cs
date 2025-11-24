@@ -29,7 +29,6 @@ SOFTWARE.
 using Collections.Pooled;
 using LoneArenaDmaRadar.Arena.GameWorld.Player;
 using LoneArenaDmaRadar.Arena.Mono.Collections;
-using LoneArenaDmaRadar.DMA;
 
 namespace LoneArenaDmaRadar.Arena.GameWorld
 {

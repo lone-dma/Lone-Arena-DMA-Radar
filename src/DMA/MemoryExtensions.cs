@@ -104,7 +104,7 @@ namespace LoneArenaDmaRadar.DMA
         /// <returns>True if valid, otherwise False.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsValidVirtualAddress(this ulong va) =>
-            MemDMA.IsValidVirtualAddress(va);
+            Memory.IsValidVirtualAddress(va);
 
         /// <summary>
         /// Throws an exception if the Virtual Address is invalid.
@@ -123,7 +123,7 @@ namespace LoneArenaDmaRadar.DMA
             {
                 errorMsg = $"Invalid Virtual Address 0x{va:X}";
             }
-            if (!MemDMA.IsValidVirtualAddress(va))
+            if (!Memory.IsValidVirtualAddress(va))
                 throw new InvalidOperationException(errorMsg);
         }
     }

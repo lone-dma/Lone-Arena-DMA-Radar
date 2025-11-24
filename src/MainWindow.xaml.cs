@@ -72,8 +72,6 @@ namespace LoneArenaDmaRadar
             {
                 App.Config.UI.WindowSize = new Size(this.Width, this.Height);
                 App.Config.UI.WindowMaximized = this.WindowState == WindowState.Maximized;
-
-                Memory.Dispose(); // Close FPGA
             }
             finally
             {
