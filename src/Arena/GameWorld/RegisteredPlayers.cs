@@ -29,6 +29,7 @@ SOFTWARE.
 using Collections.Pooled;
 using LoneArenaDmaRadar.Arena.GameWorld.Player;
 using LoneArenaDmaRadar.Arena.Mono.Collections;
+using VmmSharpEx.Extensions;
 
 namespace LoneArenaDmaRadar.Arena.GameWorld
 {
@@ -76,7 +77,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
                 }
                 ArgumentNullException.ThrowIfNull(LocalPlayer, nameof(LocalPlayer));
                 using var playersList = MonoList<ulong>.Create(this, false); // Realtime Read
-                using var registered = playersList.Where(x => x.IsValidVirtualAddress()).ToPooledSet();
+                using var registered = playersList.Where(x => x.IsValidUserVA()).ToPooledSet();
                 /// Allocate New Players
                 foreach (var playerBase in registered)
                 {

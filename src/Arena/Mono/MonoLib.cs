@@ -55,6 +55,8 @@ SOFTWARE.
  *
 */
 
+using VmmSharpEx.Extensions;
+
 namespace LoneArenaDmaRadar.Arena.Mono
 {
     internal static class MonoLib
@@ -80,8 +82,8 @@ namespace LoneArenaDmaRadar.Arena.Mono
             var singletons = Singleton.FindMany("GameWorld", "AbstractGame");
             var gameWorldField = singletons[0];
             var abstractGameField = singletons[1];
-            gameWorldField.ThrowIfInvalidVirtualAddress(nameof(gameWorldField));
-            abstractGameField.ThrowIfInvalidVirtualAddress(nameof(abstractGameField));
+            gameWorldField.ThrowIfInvalidUserVA(nameof(gameWorldField));
+            abstractGameField.ThrowIfInvalidUserVA(nameof(abstractGameField));
             GameWorldField = gameWorldField;
             AbstractGameField = abstractGameField;
             Debug.WriteLine("Mono Init [OK]");
@@ -122,7 +124,7 @@ namespace LoneArenaDmaRadar.Arena.Mono
             try
             {
                 var pointer = Memory.ReadValue<ulong>(addr, useCache);
-                pointer.ThrowIfInvalidVirtualAddress();
+                pointer.ThrowIfInvalidUserVA();
                 return pointer;
             }
             catch
@@ -249,7 +251,8 @@ namespace LoneArenaDmaRadar.Arena.Mono
 
                 ulong monoImageSetPtrBase = Memory.MonoBase + 0x751980; // img_set_cache (MonoImageSet)
 
-                using var monoImageSetPtrArray = Memory.ReadArray<ulong>(monoImageSetPtrBase, 1103, true);
+                using var monoImageSetPtrArrayPooled = Memory.ReadPooled<ulong>(monoImageSetPtrBase, 1103, true);
+                var monoImageSetPtrArray = monoImageSetPtrArrayPooled.Memory.Span;
                 using var mapOuter = Memory.CreateScatterMap();
                 var r1 = mapOuter.AddRound();
                 var r2 = mapOuter.AddRound();
@@ -280,13 +283,13 @@ namespace LoneArenaDmaRadar.Arena.Mono
                                         {
                                             if (tableData.TableSize > 100000 || tableData.KVS == 0x0)
                                                 return;
-                                            using var genericClassPtrArray = Memory.ReadArray<GenericClassPtrEntry>(tableData.KVS, tableData.TableSize, true);
+                                            using var genericClassPtrArray = Memory.ReadPooled<GenericClassPtrEntry>(tableData.KVS, tableData.TableSize, true);
                                             using var mapInner = Memory.CreateScatterMap();
                                             var r11 = mapInner.AddRound();
                                             var r22 = mapInner.AddRound();
-                                            foreach (var genericClassPtr in genericClassPtrArray)
+                                            foreach (var genericClassPtr in genericClassPtrArray.Memory.Span)
                                             {
-                                                if (!genericClassPtr.Ptr.IsValidVirtualAddress())
+                                                if (!genericClassPtr.Ptr.IsValidUserVA())
                                                     continue;
                                                 r11.PrepareReadPtr(genericClassPtr.Ptr + 0x20);
                                                 r11.Completed += (sender, s11) =>
@@ -547,7 +550,7 @@ namespace LoneArenaDmaRadar.Arena.Mono
                         monoPtr = method;
                 }
 
-                if (!monoPtr.IsValidVirtualAddress())
+                if (!monoPtr.IsValidUserVA())
                 {
                     throw new InvalidOperationException($"'{methodName}' Function not found / Invalid address!");
                 }
