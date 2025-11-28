@@ -32,6 +32,7 @@ using LoneArenaDmaRadar.Arena.Unity.Structures;
 using LoneArenaDmaRadar.Misc;
 using LoneArenaDmaRadar.UI.Radar.Maps;
 using LoneArenaDmaRadar.UI.Skia;
+using VmmSharpEx.Extensions;
 using VmmSharpEx.Scatter;
 
 namespace LoneArenaDmaRadar.Arena.GameWorld.Explosives
@@ -55,7 +56,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Explosives
 
         public Grenade(ulong baseAddr, ConcurrentDictionary<ulong, IExplosiveItem> parent)
         {
-            baseAddr.ThrowIfInvalidVirtualAddress(nameof(baseAddr));
+            baseAddr.ThrowIfInvalidUserVA(nameof(baseAddr));
             Addr = baseAddr;
             _parent = parent;
             var type = ObjectClass.ReadName(baseAddr, 64, false);

@@ -29,6 +29,7 @@ SOFTWARE.
 using LoneArenaDmaRadar.Arena.Unity.Structures;
 using LoneArenaDmaRadar.Misc.Workers;
 using LoneArenaDmaRadar.UI.Hotkeys;
+using VmmSharpEx.Extensions;
 using VmmSharpEx.Scatter;
 
 namespace LoneArenaDmaRadar.Arena.Unity
@@ -64,7 +65,7 @@ namespace LoneArenaDmaRadar.Arena.Unity
         {
             try
             {
-                unityBase.ThrowIfInvalidVirtualAddress(nameof(unityBase));
+                unityBase.ThrowIfInvalidUserVA(nameof(unityBase));
                 _inputManager = Memory.ReadPtr(unityBase + UnitySDK.ModuleBase.InputManager, false);
                 _thread = new()
                 {

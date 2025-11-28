@@ -37,8 +37,8 @@
             var componentArr = Memory.ReadValue<ComponentArray>(gameObject + ComponentsOffset);
             int size = componentArr.Size <= 0x1000 ?
                 (int)componentArr.Size : 0x1000;
-            using var compsBuf = Memory.ReadArray<ComponentArray.Entry>(componentArr.ArrayBase, size);
-            foreach (var comp in compsBuf)
+            using var compsBuf = Memory.ReadPooled<ComponentArray.Entry>(componentArr.ArrayBase, size);
+            foreach (var comp in compsBuf.Memory.Span)
             {
                 var compClass = Memory.ReadPtr(comp.Component + MonoBehaviour.ObjectClassOffset);
                 var name = Structures.ObjectClass.ReadName(compClass);
