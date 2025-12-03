@@ -59,7 +59,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
         /// <summary>
         /// Current Game Instance Mode.
         /// </summary>
-        public static Enums.ERaidMode MatchMode { get; private set; }
+        public static Enums.ERaidMode RaidMode { get; private set; }
         /// <summary>
         /// True if the current game mode has teams (armbands).
         /// </summary>
@@ -67,7 +67,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
         {
             get
             {
-                return MatchMode switch
+                return RaidMode switch
                 {
                     Enums.ERaidMode.LastHero => false,
                     _ => true,
@@ -187,17 +187,17 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
                 var map = Memory.ReadUnicodeString(mapPtr, 64, false);
                 Debug.WriteLine("Detected Map " + map);
                 if (!StaticGameData.MapNames.ContainsKey(map))
-                    throw new Exception("Invalid Map ID!");
+                    throw new InvalidOperationException("Invalid Map ID!");
                 /// Get Raid Instance / Players List
                 var inMatch = Memory.ReadValue<bool>(localGameWorld + Offsets.ClientLocalGameWorld.IsInRaid, false);
                 if (!inMatch)
-                    throw new Exception("Invalid Match Instance (Hideout?)");
+                    throw new InvalidOperationException("Invalid Match Instance (Hideout?)");
                 var networkGame = Memory.ReadPtr(MonoLib.AbstractGameField, false);
                 var networkGameData = Memory.ReadPtr(networkGame + Offsets.NetworkGame.NetworkGameData, false);
                 var raidMode = Memory.ReadValue<int>(networkGameData + Offsets.NetworkGameData.raidMode, false);
                 if (raidMode is < 0 or > 20)
                     throw new ArgumentOutOfRangeException(nameof(raidMode));
-                MatchMode = (Enums.ERaidMode)raidMode;
+                RaidMode = (Enums.ERaidMode)raidMode;
                 return new LocalGameWorld(localGameWorld, map);
             }
             catch (Exception ex)
