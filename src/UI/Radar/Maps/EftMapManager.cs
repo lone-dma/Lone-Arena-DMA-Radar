@@ -97,7 +97,7 @@ namespace LoneArenaDmaRadar.UI.Radar.Maps
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"ERROR loading '{mapId}'", ex);
+                    throw new InvalidOperationException($"ERROR loading '{mapId}'", ex);
                 }
             }
         }
