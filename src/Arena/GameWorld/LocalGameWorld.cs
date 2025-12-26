@@ -186,8 +186,6 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
                 var mapPtr = Memory.ReadValue<ulong>(localGameWorld + Offsets.GameWorld.Location, false);
                 var map = Memory.ReadUnicodeString(mapPtr, 64, false);
                 Debug.WriteLine("Detected Map " + map);
-                if (!StaticGameData.MapNames.ContainsKey(map))
-                    throw new InvalidOperationException("Invalid Map ID!");
                 /// Get Raid Instance / Players List
                 var inMatch = Memory.ReadValue<bool>(localGameWorld + Offsets.ClientLocalGameWorld.IsInRaid, false);
                 if (!inMatch)
