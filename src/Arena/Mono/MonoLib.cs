@@ -78,7 +78,7 @@ namespace LoneArenaDmaRadar.Arena.Mono
 
         private static void MemDMA_ProcessStarting(object sender, EventArgs e)
         {
-            Debug.WriteLine("Initializing Mono...");
+            Logging.WriteLine("Initializing Mono...");
             var singletons = Singleton.FindMany("GameWorld", "AbstractGame");
             var gameWorldField = singletons[0];
             var abstractGameField = singletons[1];
@@ -86,7 +86,7 @@ namespace LoneArenaDmaRadar.Arena.Mono
             abstractGameField.ThrowIfInvalidUserVA(nameof(abstractGameField));
             GameWorldField = gameWorldField;
             AbstractGameField = abstractGameField;
-            Debug.WriteLine("Mono Init [OK]");
+            Logging.WriteLine("Mono Init [OK]");
         }
 
         private static void MemDMA_ProcessStopped(object sender, EventArgs e)

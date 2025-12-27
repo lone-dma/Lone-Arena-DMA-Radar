@@ -196,7 +196,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ERROR updating Health Status for '{Name}': {ex}");
+                Logging.WriteLine($"ERROR updating Health Status for '{Name}': {ex}");
             }
         }
 

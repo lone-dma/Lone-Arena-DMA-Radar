@@ -136,7 +136,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ERROR during Player Allocation for player @ 0x{playerBase:X}: {ex}");
+                Logging.WriteLine($"ERROR during Player Allocation for player @ 0x{playerBase:X}: {ex}");
             }
         }
 
@@ -146,7 +146,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             if (className != "ArenaObservedPlayerView")
                 throw new ArgumentException(nameof(className));
             var player = new ObservedPlayer(playerBase);
-            Debug.WriteLine($"Player '{player.Name}' allocated.");
+            Logging.WriteLine($"Player '{player.Name}' allocated.");
             return player;
         }
 
@@ -464,7 +464,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
                             }
                             catch (Exception ex) // Attempt to re-allocate Transform on error
                             {
-                                Debug.WriteLine($"ERROR getting Player '{Name}' SkeletonRoot Position: {ex}");
+                                Logging.WriteLine($"ERROR getting Player '{Name}' SkeletonRoot Position: {ex}");
                                 var newRoot = new UnityTransform(SkeletonRoot.TransformInternal, false);
                                 SkeletonRoot = newRoot;
                             }
@@ -498,7 +498,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
                         {
                             if (SkeletonRoot.VerticesAddr != verticesPtr) // check if any addr changed
                             {
-                                Debug.WriteLine($"WARNING - SkeletonRoot Transform has changed for Player '{Name}'");
+                                Logging.WriteLine($"WARNING - SkeletonRoot Transform has changed for Player '{Name}'");
                                 var newRoot = new UnityTransform(SkeletonRoot.TransformInternal, false);
                                 SkeletonRoot = newRoot;
                             }
@@ -575,7 +575,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"WARNING! Player Draw Error: {ex}");
+                Logging.WriteLine($"WARNING! Player Draw Error: {ex}");
             }
         }
 
