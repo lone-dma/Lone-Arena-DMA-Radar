@@ -254,7 +254,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
         /// <summary>
         /// True if player is being focused via Right-Click (UI).
         /// </summary>
-        public bool IsFocused { get; set; }
+        public bool IsFocused { get; protected set; }
 
         #endregion
 
