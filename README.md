@@ -11,7 +11,7 @@ No feature requests in Issues please.
 ## 👋 Welcome
 This is the original Lone Arena DMA Radar by Lone, with some key differences from the original version:
 1. **Radar Only/No Memwrites.**
-3. New & Improved WPF User Interface.
+3. New & Improved Silk.NET / ImGui interface.
 
 This version is designed to be as safe as possible from any future detections, and gives you the information that you need while allowing you to fully experience the game for yourself.
 
