@@ -38,11 +38,6 @@ namespace LoneArenaDmaRadar
     /// </summary>
     public sealed class ArenaDmaConfig
     {
-        private static readonly JsonSerializerOptions _jsonOptions = new()
-        {
-            WriteIndented = true,
-            TypeInfoResolver = AppJsonContext.Default
-        };
         /// <summary>
         /// Public Constructor required for deserialization.
         /// DO NOT CALL - USE LOAD().
