@@ -40,8 +40,6 @@ namespace LoneArenaDmaRadar.UI.Widgets
     {
         // Constants
         public const float AimviewBaseStrokeSize = 1.33f;
-        private const float LOOT_RENDER_DISTANCE = 10f;
-        private const float CONTAINER_RENDER_DISTANCE = 10f;
 
         private static GL _gl;
         private static GRContext _grContext;
@@ -214,7 +212,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
 
             float scale = Program.Config.UI.UIScale;
             float minRadius = 1.5f * scale;
-            float maxRadius = 12f * scale;
+            float maxRadius = 8f * scale;
 
             foreach (var player in players)
             {
