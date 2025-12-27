@@ -1,0 +1,16 @@
+{
+	"mapID": ["Arena_Woods"],
+	"name" : "Emercom",
+	"x": 303,
+	"y": 343,
+	"scale": 1.00,
+	"svgScale" : 4.00,
+	"disableDimming" : true,
+	"mapLayers": [
+		{
+			"minHeight": null,
+			"maxHeight": null,
+			"filename": "Arena_Emercom.svg"
+		}
+	]
+}
