@@ -91,7 +91,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CRITICAL ERROR - RegisteredPlayers Loop FAILED: {ex}");
+                Logging.WriteLine($"CRITICAL ERROR - RegisteredPlayers Loop FAILED: {ex}");
             }
         }
 

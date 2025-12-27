@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Lone EFT DMA Radar
  * Brought to you by Lone (Lone DMA)
  * 
@@ -32,9 +32,7 @@ using LoneArenaDmaRadar.Arena.GameWorld;
 using LoneArenaDmaRadar.Arena.GameWorld.Explosives;
 using LoneArenaDmaRadar.Arena.GameWorld.Player;
 using LoneArenaDmaRadar.Arena.Mono;
-using LoneArenaDmaRadar.Arena.Unity;
-using LoneArenaDmaRadar.Misc;
-using System.Drawing;
+using System.Runtime;
 using VmmSharpEx;
 using VmmSharpEx.Extensions;
 using VmmSharpEx.Options;
@@ -52,10 +50,10 @@ namespace LoneArenaDmaRadar.DMA
 
         private const string GAME_PROCESS_NAME = "EscapeFromTarkovArena.exe";
         internal const uint MAX_READ_SIZE = 0x1000u * 1500u;
-        private static readonly string _mmap = Path.Combine(App.ConfigPath.FullName, "mmap.txt");
+        private static readonly string _mmap = Path.Combine(Program.ConfigPath.FullName, "mmap.txt");
         private static Vmm _vmm;
+        private static InputManager _input;
         private static uint _pid;
-        private static bool _restartRadar;
 
         public static string MapID => Game?.MapID;
         public static ulong MonoBase { get; private set; }
@@ -63,18 +61,6 @@ namespace LoneArenaDmaRadar.DMA
         public static bool Starting { get; private set; }
         public static bool Ready { get; private set; }
         public static bool InRaid => Game?.InRaid ?? false;
-
-        /// <summary>
-        /// Set to TRUE to restart the Radar on the next game loop cycle.
-        /// </summary>
-        public static bool RestartRadar
-        {
-            set
-            {
-                if (InRaid)
-                    _restartRadar = value;
-            }
-        }
 
         public static IReadOnlyCollection<AbstractPlayer> Players => Game?.Players;
         public static IReadOnlyCollection<IExplosiveItem> Explosives => Game?.Explosives;
@@ -84,27 +70,33 @@ namespace LoneArenaDmaRadar.DMA
         static Memory()
         {
             RuntimeHelpers.RunClassConstructor(typeof(MonoLib).TypeHandle);
-            RuntimeHelpers.RunClassConstructor(typeof(InputManager).TypeHandle);
         }
 
         internal static async Task ModuleInitAsync()
         {
             await Task.Run(() =>
             {
-                FpgaAlgo fpgaAlgo = App.Config.DMA.FpgaAlgo;
-                bool useMemMap = App.Config.DMA.MemMapEnabled;
-                Debug.WriteLine("Initializing DMA...");
+                FpgaAlgo fpgaAlgo = Program.Config.DMA.FpgaAlgo;
+                bool useMemMap = Program.Config.DMA.MemMapEnabled;
+                Logging.WriteLine("Initializing DMA...");
                 /// Check MemProcFS Versions...
                 string vmmVersion = FileVersionInfo.GetVersionInfo("vmm.dll").FileVersion;
                 string lcVersion = FileVersionInfo.GetVersionInfo("leechcore.dll").FileVersion;
                 string versions = $"Vmm Version: {vmmVersion}\n" +
                     $"Leechcore Version: {lcVersion}";
-                string[] initArgs = new[] {
-                "-norefresh",
-                "-device",
-                fpgaAlgo is FpgaAlgo.Auto ?
-                    "fpga" : $"fpga://algo={(int)fpgaAlgo}",
-                "-waitinitialize"};
+                List<string> initArgs = new()
+                {
+                    "-norefresh",
+                    "-device",
+                    fpgaAlgo is FpgaAlgo.Auto ?
+                        "fpga" : $"fpga://algo={(int)fpgaAlgo}",
+                    "-waitinitialize"
+                };
+                if (Logging.UseConsole)
+                {
+                    initArgs.Add("-printf");
+                    initArgs.Add("-v");
+                }
                 try
                 {
                     /// Begin Init...
@@ -112,8 +104,8 @@ namespace LoneArenaDmaRadar.DMA
                     {
                         if (!File.Exists(_mmap))
                         {
-                            Debug.WriteLine("[DMA] No MemMap, attempting to generate...");
-                            _vmm = new Vmm(args: initArgs)
+                            Logging.WriteLine("[DMA] No MemMap, attempting to generate...");
+                            _vmm = new Vmm(args: initArgs.ToArray())
                             {
                                 EnableMemoryWriting = false
                             };
@@ -123,25 +115,39 @@ namespace LoneArenaDmaRadar.DMA
                         }
                         else
                         {
-                            var mapArgs = new[] { "-memmap", _mmap };
-                            initArgs = initArgs.Concat(mapArgs).ToArray();
+                            initArgs.Add("-memmap");
+                            initArgs.Add(_mmap);
                         }
                     }
-                    _vmm ??= new Vmm(args: initArgs)
+                    _vmm ??= new Vmm(args: initArgs.ToArray())
                     {
                         EnableMemoryWriting = false
                     };
                     AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
                     _vmm.RegisterAutoRefresh(RefreshOption.MemoryPartial, TimeSpan.FromMilliseconds(300));
                     _vmm.RegisterAutoRefresh(RefreshOption.TlbPartial, TimeSpan.FromSeconds(2));
+                    try
+                    {
+                        _input = new(_vmm);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(
+                            messageBoxText: $"WARNING: Failed to initialize InputManager (win32). Please note, this only works on Windows 11 (Game PC). Startup will continue without hotkeys.\n\n{ex}",
+                            caption: Program.Name,
+                            button: MessageBoxButton.OK,
+                            icon: MessageBoxImage.Warning,
+                            options: MessageBoxOptions.DefaultDesktopOnly);
+                    }
                     ProcessStopped += MemDMA_ProcessStopped;
+                    RaidStarted += Memory_RaidStarted;
                     RaidStopped += MemDMA_RaidStopped;
                     // Start Memory Thread after successful startup
                     new Thread(MemoryPrimaryWorker)
                     {
                         IsBackground = true
                     }.Start();
-                    Debug.WriteLine("DMA Initialized!");
+                    Logging.WriteLine("DMA Initialized!");
                 }
                 catch (Exception ex)
                 {
@@ -170,9 +176,7 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         private static void MemoryPrimaryWorker()
         {
-            Debug.WriteLine("Memory thread starting...");
-            while (MainWindow.Instance is null)
-                Thread.Sleep(1);
+            Logging.WriteLine("Memory thread starting...");
             while (true)
             {
                 try
@@ -187,10 +191,30 @@ namespace LoneArenaDmaRadar.DMA
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"FATAL ERROR on Memory Thread: {ex}");
+                    Logging.WriteLine($"FATAL ERROR on Memory Thread: {ex}");
                     OnProcessStopped();
                     Thread.Sleep(1000);
                 }
+            }
+        }
+
+        #endregion
+
+        #region Restart Radar
+
+        private static readonly Lock _restartSync = new();
+        private static CancellationTokenSource _cts = new();
+
+        /// <summary>
+        /// Signal the Radar to restart the raid/game loop.
+        /// </summary>
+        public static void RestartRadar()
+        {
+            lock (_restartSync)
+            {
+                var old = Interlocked.Exchange(ref _cts, new());
+                old.Cancel();
+                old.Dispose();
             }
         }
 
@@ -204,24 +228,23 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         private static void RunStartupLoop()
         {
-            Debug.WriteLine("New Process Startup");
+            Logging.WriteLine("New Process Startup");
             while (true) // Startup loop
             {
                 try
                 {
                     _vmm.ForceFullRefresh();
-                    ResourceJanitor.Run();
                     LoadProcess();
                     LoadModules();
                     Starting = true;
                     OnProcessStarting();
                     Ready = true;
-                    Debug.WriteLine("Process Startup [OK]");
+                    Logging.WriteLine("Process Startup [OK]");
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Process Startup [FAIL]: {ex}");
+                    Logging.WriteLine($"Process Startup [FAIL]: {ex}");
                     OnProcessStopped();
                     Thread.Sleep(1000);
                 }
@@ -238,31 +261,32 @@ namespace LoneArenaDmaRadar.DMA
             {
                 try
                 {
+                    var ct = _cts.Token;
                     using (var game = Game = LocalGameWorld.CreateGameInstance())
                     {
                         OnRaidStarted();
                         game.Start();
                         while (game.InRaid)
                         {
-                            if (_restartRadar)
-                            {
-                                Debug.WriteLine("Restarting Radar per User Request.");
-                                _restartRadar = false;
-                                break;
-                            }
+                            ct.ThrowIfCancellationRequested();
                             game.Refresh();
                             Thread.Sleep(133);
                         }
                     }
                 }
-                catch (OperationCanceledException ex) // Process Closed
+                catch (OperationCanceledException ex) // Restart Radar
                 {
-                    Debug.WriteLine(ex.Message);
+                    Logging.WriteLine(ex.Message);
+                    continue;
+                }
+                catch (ProcessNotRunningException ex) // Process Closed
+                {
+                    Logging.WriteLine(ex.Message);
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Unhandled Exception in Game Loop: {ex}");
+                    Logging.WriteLine($"Unhandled Exception in Game Loop: {ex}");
                     break;
                 }
                 finally
@@ -280,7 +304,6 @@ namespace LoneArenaDmaRadar.DMA
         /// <param name="e"></param>
         private static void MemDMA_ProcessStopped(object sender, EventArgs e)
         {
-            _restartRadar = default;
             Starting = default;
             Ready = default;
             UnityBase = default;
@@ -288,10 +311,15 @@ namespace LoneArenaDmaRadar.DMA
             _pid = default;
         }
 
+        private static void Memory_RaidStarted(object sender, EventArgs e)
+        {
+            GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        }
 
         private static void MemDMA_RaidStopped(object sender, EventArgs e)
         {
             Game = null;
+            GCSettings.LatencyMode = GCLatencyMode.Interactive;
         }
 
         /// <summary>
@@ -498,6 +526,7 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         /// <typeparam name="T">Specified Value Type.</typeparam>
         /// <param name="addr">Address to read from.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ReadValue<T>(ulong addr, bool useCache = true)
             where T : unmanaged, allows ref struct
         {
@@ -541,9 +570,9 @@ namespace LoneArenaDmaRadar.DMA
         }
 
         /// <summary>
-        /// Read null terminated Unicode string.
+        /// Read null terminated Unity string (Unicode Encoding).
         /// </summary>
-        public static string ReadUnicodeString(ulong addr, int cb = 128, bool useCache = true)
+        public static string ReadUnityString(ulong addr, int cb = 128, bool useCache = true)
         {
             ArgumentOutOfRangeException.ThrowIfGreaterThan(cb, 0x1000, nameof(cb));
             var flags = useCache ? VmmFlags.NONE : VmmFlags.NOCACHE;
@@ -572,10 +601,16 @@ namespace LoneArenaDmaRadar.DMA
         public static VmmScatter CreateScatter(VmmFlags flags = VmmFlags.NONE) =>
             _vmm.CreateScatter(_pid, flags);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong FindSignature(string signature)
+        {
+            return _vmm.FindSignature(_pid, signature, "UnityPlayer.dll");
+        }
+
         /// <summary>
         /// Throws a special exception if no longer in game.
         /// </summary>
-        /// <exception cref="OperationCanceledException"></exception>
+        /// <exception cref="ProcessNotRunningException"></exception>
         public static void ThrowIfProcessNotRunning()
         {
             _vmm.ForceFullRefresh();
@@ -595,27 +630,14 @@ namespace LoneArenaDmaRadar.DMA
                 }
             }
 
-            throw new OperationCanceledException("Process is not running!");
+            throw new ProcessNotRunningException();
         }
 
-        /// <summary>
-        /// Get the Monitor Resolution from the Game Monitor.
-        /// </summary>
-        /// <returns>Monitor Resolution Result</returns>
-        public static Rectangle GetMonitorRes()
+        private sealed class ProcessNotRunningException : Exception
         {
-            try
+            public ProcessNotRunningException()
+                : base("Process is not running!")
             {
-                var gfx = ReadPtr(UnityBase + UnitySDK.ModuleBase.GfxDevice, false);
-                var res = ReadValue<Rectangle>(gfx + UnitySDK.GfxDeviceClient.Viewport, false);
-                if (res.Width <= 0 || res.Width > 10000 ||
-                    res.Height <= 0 || res.Height > 5000)
-                    throw new ArgumentOutOfRangeException(nameof(res));
-                return res;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("ERROR Getting Game Monitor Res", ex);
             }
         }
 

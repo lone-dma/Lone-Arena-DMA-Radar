@@ -26,8 +26,10 @@ SOFTWARE.
  *
 */
 
-using LoneArenaDmaRadar.Arena.Unity.Structures;
+using LoneArenaDmaRadar.Misc.JSON;
 using LoneArenaDmaRadar.UI.ColorPicker;
+using System.Drawing;
+using VmmSharpEx.Extensions.Input;
 
 namespace LoneArenaDmaRadar
 {
@@ -38,7 +40,8 @@ namespace LoneArenaDmaRadar
     {
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
-            WriteIndented = true
+            WriteIndented = true,
+            TypeInfoResolver = AppJsonContext.Default
         };
         /// <summary>
         /// Public Constructor required for deserialization.
@@ -50,37 +53,38 @@ namespace LoneArenaDmaRadar
         /// DMA Config
         /// </summary>
         [JsonPropertyName("dma")]
-        [JsonInclude]
-        public DMAConfig DMA { get; private set; } = new();
+        public DMAConfig DMA { get; set; } = new();
 
         /// <summary>
         /// Twitch API Config (for streamer lookup).
         /// </summary>
         [JsonPropertyName("twitchApi")]
-        [JsonInclude]
-        public TwitchApiConfig TwitchApi { get; private set; } = new();
+        public TwitchApiConfig TwitchApi { get; set; } = new();
 
         /// <summary>
         /// UI/Radar Config
         /// </summary>
         [JsonPropertyName("ui")]
-        [JsonInclude]
-        public UIConfig UI { get; private set; } = new();
+        public UIConfig UI { get; set; } = new();
 
         /// <summary>
         /// Hotkeys Dictionary for Radar.
         /// </summary>
-        [JsonPropertyName("hotkeys")]
-        [JsonInclude]
-        public ConcurrentDictionary<UnityKeyCode, string> Hotkeys { get; private set; } = new(); // Default entries
+        [JsonPropertyName("hotkeys_v2")]
+        public ConcurrentDictionary<Win32VirtualKey, string> Hotkeys { get; set; } = new(); // Default entries
 
         /// <summary>
         /// All defined Radar Colors.
         /// </summary>
         [JsonPropertyName("radarColors")]
         [JsonConverter(typeof(ColorDictionaryConverter))]
-        [JsonInclude]
-        public ConcurrentDictionary<ColorPickerOption, string> RadarColors { get; private set; } = new();
+        public ConcurrentDictionary<ColorPickerOption, string> RadarColors { get; set; } = new();
+
+        /// <summary>
+        /// Widgets Configuration.
+        /// </summary>
+        [JsonPropertyName("aimviewWidget")]
+        public AimviewWidgetConfig AimviewWidget { get; set; } = new();
 
         #region Config Interface
 
@@ -94,13 +98,13 @@ namespace LoneArenaDmaRadar
         private static readonly Lock _syncRoot = new();
 
         [JsonIgnore]
-        private static readonly FileInfo _configFile = new(Path.Combine(App.ConfigPath.FullName, Filename));
+        private static readonly FileInfo _configFile = new(Path.Combine(Program.ConfigPath.FullName, Filename));
 
         [JsonIgnore]
-        private static readonly FileInfo _tempFile = new(Path.Combine(App.ConfigPath.FullName, Filename + ".tmp"));
+        private static readonly FileInfo _tempFile = new(Path.Combine(Program.ConfigPath.FullName, Filename + ".tmp"));
 
         [JsonIgnore]
-        private static readonly FileInfo _backupFile = new(Path.Combine(App.ConfigPath.FullName, Filename + ".bak"));
+        private static readonly FileInfo _backupFile = new(Path.Combine(Program.ConfigPath.FullName, Filename + ".bak"));
 
         /// <summary>
         /// Loads the configuration from disk.
@@ -113,7 +117,7 @@ namespace LoneArenaDmaRadar
             ArenaDmaConfig config;
             lock (_syncRoot)
             {
-                App.ConfigPath.Create();
+                Program.ConfigPath.Create();
                 if (_configFile.Exists)
                 {
                     config = TryLoad(_tempFile) ??
@@ -125,7 +129,7 @@ namespace LoneArenaDmaRadar
                         var dlg = MessageBox.Show(
                             "Config File Corruption Detected! If you backed up your config, you may attempt to restore it.\n" +
                             "Press OK to Reset Config and continue startup, or CANCEL to terminate program.",
-                            App.Name,
+                            Program.Name,
                             MessageBoxButton.OKCancel,
                             MessageBoxImage.Error);
                         if (dlg == MessageBoxResult.Cancel)
@@ -151,7 +155,7 @@ namespace LoneArenaDmaRadar
                 if (!file.Exists)
                     return null;
                 string json = File.ReadAllText(file.FullName);
-                return JsonSerializer.Deserialize<ArenaDmaConfig>(json, _jsonOptions);
+                return JsonSerializer.Deserialize(json, AppJsonContext.Default.ArenaDmaConfig);
             }
             catch
             {
@@ -186,7 +190,7 @@ namespace LoneArenaDmaRadar
 
         private static void SaveInternal(ArenaDmaConfig config)
         {
-            var json = JsonSerializer.Serialize(config, _jsonOptions);
+            var json = JsonSerializer.Serialize(config, AppJsonContext.Default.ArenaDmaConfig);
             using (var fs = new FileStream(
                 _tempFile.FullName,
                 FileMode.Create,
@@ -283,5 +287,12 @@ namespace LoneArenaDmaRadar
         [JsonPropertyName("clientSecret")]
         public string ClientSecret { get; set; } = null;
     }
-
+    public sealed class AimviewWidgetConfig
+    {
+        /// <summary>
+        /// True if the Aimview Widget is enabled.
+        /// </summary>
+        [JsonPropertyName("enabled")]
+        public bool Enabled { get; set; } = true;
+    }
 }

@@ -77,7 +77,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
         private string GetName()
         {
             var namePtr = Memory.ReadPtr(Info + Offsets.PlayerInfo.Nickname);
-            var name = Memory.ReadUnicodeString(namePtr)?.Trim();
+            var name = Memory.ReadUnityString(namePtr)?.Trim();
             if (string.IsNullOrEmpty(name))
                 name = "default";
             return name;
@@ -103,7 +103,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
         private string GetAccountID()
         {
             var idPTR = Memory.ReadPtr(Profile + Offsets.Profile.AccountId);
-            return Memory.ReadUnicodeString(idPTR);
+            return Memory.ReadUnityString(idPTR);
         }
 
         /// <summary>
