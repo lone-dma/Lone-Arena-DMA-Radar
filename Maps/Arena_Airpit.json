@@ -1,9 +1,11 @@
 {
 	"mapID": ["Arena_AirPit"],
+	"name" : "Air Pit",
 	"x": 699.5,
 	"y": 665.5,
 	"scale": 6.725,
 	"svgScale" : 2.00,
+	"disableDimming" : true,
 	"mapLayers": [
 		{
 			"minHeight": null,

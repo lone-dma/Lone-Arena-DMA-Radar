@@ -29,7 +29,6 @@ SOFTWARE.
 using LoneArenaDmaRadar.Arena.GameWorld.Explosives;
 using LoneArenaDmaRadar.Arena.GameWorld.Player;
 using LoneArenaDmaRadar.Arena.Mono;
-using LoneArenaDmaRadar.Misc;
 using LoneArenaDmaRadar.Misc.Workers;
 using VmmSharpEx.Options;
 
@@ -148,7 +147,6 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
         {
             while (true)
             {
-                ResourceJanitor.Run();
                 Memory.ThrowIfProcessNotRunning();
                 try
                 {
@@ -184,7 +182,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
                 var localGameWorld = Memory.ReadPtr(MonoLib.GameWorldField, false); // Game world >> Local Game World
                 /// Get Selected Map
                 var mapPtr = Memory.ReadValue<ulong>(localGameWorld + Offsets.GameWorld.Location, false);
-                var map = Memory.ReadUnicodeString(mapPtr, 64, false);
+                var map = Memory.ReadUnityString(mapPtr, 64, false);
                 Debug.WriteLine("Detected Map " + map);
                 /// Get Raid Instance / Players List
                 var inMatch = Memory.ReadValue<bool>(localGameWorld + Offsets.ClientLocalGameWorld.IsInRaid, false);

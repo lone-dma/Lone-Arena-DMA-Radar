@@ -1,9 +1,11 @@
 {
 	"mapID": ["Arena_Bay5"],
+	"name" : "Bay 5",
 	"x": 377.5,
 	"y": 730,
 	"scale": 5.525,
 	"svgScale" : 2.00,
+	"disableDimming" : true,
 	"mapLayers": [
 		{
 			"minHeight": null,

@@ -31,7 +31,7 @@ using LoneArenaDmaRadar.Arena.Mono.Collections;
 using LoneArenaDmaRadar.Arena.Unity;
 using LoneArenaDmaRadar.Arena.Unity.Structures;
 using LoneArenaDmaRadar.Misc;
-using LoneArenaDmaRadar.UI.Radar.Maps;
+using LoneArenaDmaRadar.UI.Maps;
 using LoneArenaDmaRadar.UI.Skia;
 using VmmSharpEx.Scatter;
 using static LoneArenaDmaRadar.Arena.Unity.Structures.UnityTransform;
@@ -39,8 +39,8 @@ using static LoneArenaDmaRadar.Arena.Unity.Structures.UnityTransform;
 namespace LoneArenaDmaRadar.Arena.GameWorld.Player
 {
     /// <summary>
-    /// Base class for Tarkov Players.
-    /// Tarkov implements several distinct classes that implement a similar player interface.
+    /// Base class for Arena Players.
+    /// Arena implements several distinct classes that implement a similar player interface.
     /// </summary>
     public abstract class AbstractPlayer : IWorldEntity, IMapEntity, IMouseoverEntity
     {
@@ -254,7 +254,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
         /// <summary>
         /// True if player is being focused via Right-Click (UI).
         /// </summary>
-        public bool IsFocused { get; protected set; }
+        public bool IsFocused { get; set; }
 
         #endregion
 
@@ -335,7 +335,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             foreach (var slotPtr in slotsArray)
             {
                 var slotNamePtr = Memory.ReadPtr(slotPtr + Offsets.Slot.ID);
-                string name = Memory.ReadUnicodeString(slotNamePtr);
+                string name = Memory.ReadUnityString(slotNamePtr);
                 if (name == "ArmBand")
                 {
                     var containedItem = Memory.ReadPtr(slotPtr + Offsets.Slot.ContainedItem);
@@ -586,7 +586,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
         {
             var paints = GetPaints();
 
-            float scale = 1.65f * App.Config.UI.UIScale;
+            float scale = 1.65f * Program.Config.UI.UIScale;
 
             canvas.Save();
             canvas.Translate(point.X, point.Y);
@@ -599,9 +599,9 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
             canvas.DrawPath(_playerPill, paints.Item1);
 
             var aimlineLength = this == localPlayer ?
-                App.Config.UI.AimLineLength : 0;
+                Program.Config.UI.AimLineLength : 0;
             // High Alert -> Check if aiming at Local Player
-            if (App.Config.UI.HighAlert &&
+            if (Program.Config.UI.HighAlert &&
                 !IsFriendly &&
                 this.IsFacingTarget(localPlayer))
                 aimlineLength = 9999;
@@ -621,7 +621,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
         /// </summary>
         private static void DrawDeathMarker(SKCanvas canvas, SKPoint point)
         {
-            float scale = App.Config.UI.UIScale;
+            float scale = Program.Config.UI.UIScale;
 
             canvas.Save();
             canvas.Translate(point.X, point.Y);
@@ -636,7 +636,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Player
         private void DrawPlayerText(SKCanvas canvas, SKPoint point, IList<string> lines)
         {
             var paints = GetPaints();
-            point.Offset(9.5f * App.Config.UI.UIScale, 0);
+            point.Offset(9.5f * Program.Config.UI.UIScale, 0);
             foreach (var line in lines)
             {
                 if (string.IsNullOrEmpty(line?.Trim()))

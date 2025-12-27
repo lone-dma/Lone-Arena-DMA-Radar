@@ -27,7 +27,7 @@ SOFTWARE.
 */
 
 using LoneArenaDmaRadar.Arena.Unity;
-using LoneArenaDmaRadar.UI.Radar.Maps;
+using LoneArenaDmaRadar.UI.Maps;
 using VmmSharpEx.Scatter;
 
 namespace LoneArenaDmaRadar.Arena.GameWorld.Explosives

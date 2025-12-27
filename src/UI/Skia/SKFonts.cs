@@ -47,17 +47,9 @@ namespace LoneArenaDmaRadar.UI.Skia
             Edging = SKFontEdging.SubpixelAntialias
         };
         /// <summary>
-        /// Regular body font (size 12) with Consolas typeface.
-        /// </summary>
-        public static SKFont InfoWidgetFont { get; } = new SKFont(SKTypeface.FromFamilyName("Consolas"), 12f)
-        {
-            Subpixel = true,
-            Edging = SKFontEdging.SubpixelAntialias
-        };
-        /// <summary>
         /// Regular body font (size 9) with default typeface.
         /// </summary>
-        public static SKFont EspWidgetFont { get; } = new SKFont(CustomFonts.NeoSansStdRegular, 9f)
+        public static SKFont AimviewWidgetFont { get; } = new SKFont(CustomFonts.NeoSansStdRegular, 9f)
         {
             Subpixel = true,
             Edging = SKFontEdging.SubpixelAntialias
