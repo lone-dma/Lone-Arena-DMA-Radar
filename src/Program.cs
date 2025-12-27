@@ -188,7 +188,7 @@ namespace LoneArenaDmaRadar
                     return;
                 var updater = new UpdateManager(
                     source: new GithubSource(
-                        repoUrl: "https://github.com/lone-dma/Lone-EFT-DMA-Radar",
+                        repoUrl: "https://github.com/lone-dma/Lone-Arena-DMA-Radar",
                         accessToken: null,
                         prerelease: false));
 
