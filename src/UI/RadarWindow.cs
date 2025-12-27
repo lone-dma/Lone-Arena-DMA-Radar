@@ -39,7 +39,9 @@ using LoneArenaDmaRadar.UI.Widgets;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
+using Silk.NET.Windowing.Glfw;
 
 namespace LoneArenaDmaRadar.UI
 {
@@ -116,6 +118,8 @@ namespace LoneArenaDmaRadar.UI
                 (int)Program.Config.UI.WindowSize.Height);
             options.Title = Program.Name;
             options.VSync = true;
+            options.PreferredStencilBufferBits = 8;
+            options.PreferredBitDepth = new Vector4D<int>(8, 8, 8, 8);
 
             // Restore maximized state from config (not fullscreen)
             if (Program.Config.UI.WindowMaximized)
@@ -123,6 +127,7 @@ namespace LoneArenaDmaRadar.UI
                 options.WindowState = WindowState.Maximized;
             }
 
+            GlfwWindowing.Use();
             _window = Window.Create(options);
 
             _window.Load += OnLoad;
@@ -165,11 +170,9 @@ namespace LoneArenaDmaRadar.UI
 
             // Pass the existing input context to ImGuiController to share it
             _imgui = new ImGuiController(
-                _gl,
-                _window,
-                _window.Size.X,
-                _window.Size.Y,
-                _input  // Share the input context
+                gl: _gl,
+                view: _window,
+                input: _input  // Share the input context
             );
 
             // Set IniFilename AFTER context and controller are created, then load settings
@@ -270,7 +273,6 @@ namespace LoneArenaDmaRadar.UI
         {
             _gl.Viewport(size);
             CreateSkiaSurface();
-            _imgui.WindowResized(size.X, size.Y);
         }
 
         private static void OnStateChanged(WindowState state)
@@ -300,24 +302,36 @@ namespace LoneArenaDmaRadar.UI
             var grContext = Interlocked.Exchange(ref _grContext, null);
             var skBackendRenderTarget = Interlocked.Exchange(ref _skBackendRenderTarget, null);
             var skSurface = Interlocked.Exchange(ref _skSurface, null);
+            var input = Interlocked.Exchange(ref _input, null);
+            var gl = Interlocked.Exchange(ref _gl, null);
             var imgui = Interlocked.Exchange(ref _imgui, null);
 
             imgui?.Dispose();
             skSurface?.Dispose();
             skBackendRenderTarget?.Dispose();
             grContext?.Dispose();
+            input?.Dispose();
+            gl?.Dispose();
         }
 
         #endregion
 
         #region Render Loop
 
+        /// <summary>
+        /// Main Render Loop.
+        /// </summary>
+        /// <remarks>
+        /// WARNING: Be careful modifying this method. The order of operations is critical to prevent rendering/resource issues.
+        /// </remarks>
+        /// <param name="delta"></param>
         private static void OnRender(double delta)
         {
             if (_grContext is null || _skSurface is null)
                 return;
             try
             {
+                _grContext.ResetContext();
                 Interlocked.Increment(ref _fpsCounter);
 
                 // --- SCENE RENDER (Skia) ---
@@ -361,10 +375,6 @@ namespace LoneArenaDmaRadar.UI
             catch (Exception ex)
             {
                 Logging.WriteLine($"***** CRITICAL RENDER ERROR: {ex}");
-            }
-            finally
-            {
-                _grContext.ResetContext();
             }
         }
 
