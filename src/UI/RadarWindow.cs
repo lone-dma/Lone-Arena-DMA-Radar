@@ -117,7 +117,8 @@ namespace LoneArenaDmaRadar.UI
                 (int)Program.Config.UI.WindowSize.Width,
                 (int)Program.Config.UI.WindowSize.Height);
             options.Title = Program.Name;
-            options.VSync = true;
+            options.VSync = false;
+            options.FramesPerSecond = Program.Config.UI.FPSLimit;
             options.PreferredStencilBufferBits = 8;
             options.PreferredBitDepth = new Vector4D<int>(8, 8, 8, 8);
 
