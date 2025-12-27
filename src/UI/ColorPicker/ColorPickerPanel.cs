@@ -244,26 +244,32 @@ namespace LoneArenaDmaRadar.UI.ColorPicker
                 case ColorPickerOption.LocalPlayer:
                     SKPaints.PaintLocalPlayer.Color = skColor;
                     SKPaints.TextLocalPlayer.Color = skColor;
+                    SKPaints.PaintAimviewWidgetLocalPlayer.Color = skColor;
                     break;
                 case ColorPickerOption.FriendlyPlayer:
                     SKPaints.PaintTeammate.Color = skColor;
                     SKPaints.TextTeammate.Color = skColor;
+                    SKPaints.PaintAimviewWidgetTeammate.Color = skColor;
                     break;
                 case ColorPickerOption.EnemyPlayer:
                     SKPaints.PaintPlayer.Color = skColor;
                     SKPaints.TextPlayer.Color = skColor;
+                    SKPaints.PaintAimviewWidgetPMC.Color = skColor;
                     break;
                 case ColorPickerOption.StreamerPlayer:
                     SKPaints.PaintStreamer.Color = skColor;
                     SKPaints.TextStreamer.Color = skColor;
+                    SKPaints.PaintAimviewWidgetStreamer.Color = skColor;
                     break;
                 case ColorPickerOption.BotPlayer:
                     SKPaints.PaintBot.Color = skColor;
                     SKPaints.TextBot.Color = skColor;
+                    SKPaints.PaintAimviewWidgetAI.Color = skColor;
                     break;
                 case ColorPickerOption.FocusedPlayer:
                     SKPaints.PaintFocused.Color = skColor;
                     SKPaints.TextFocused.Color = skColor;
+                    SKPaints.PaintAimviewWidgetFocused.Color = skColor;
                     break;
                 case ColorPickerOption.DeathMarker:
                     SKPaints.PaintDeathMarker.Color = skColor;
