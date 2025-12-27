@@ -61,7 +61,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Explosives
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error Refreshing Explosive @ 0x{explosive.Addr.ToString("X")}: {ex}");
+                    Logging.WriteLine($"Error Refreshing Explosive @ 0x{explosive.Addr.ToString("X")}: {ex}");
                 }
             }
             scatter.Execute();
@@ -85,13 +85,13 @@ namespace LoneArenaDmaRadar.Arena.GameWorld.Explosives
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error Processing Grenade @ 0x{grenade.ToString("X")}: {ex}");
+                        Logging.WriteLine($"Error Processing Grenade @ 0x{grenade.ToString("X")}: {ex}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Grenades Error: {ex}");
+                Logging.WriteLine($"Grenades Error: {ex}");
             }
         }
 

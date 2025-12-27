@@ -27,7 +27,7 @@ SOFTWARE.
 */
 
 using LoneArenaDmaRadar.Arena.GameWorld.Player;
-using LoneArenaDmaRadar.UI.Radar.Maps;
+using LoneArenaDmaRadar.UI.Maps;
 
 namespace LoneArenaDmaRadar.UI.Skia
 {

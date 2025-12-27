@@ -58,8 +58,8 @@ namespace LoneArenaDmaRadar.Web.Twitch
 
         static TwitchService()
         {
-            if (App.Config.TwitchApi.ClientId is not string clientId ||
-                App.Config.TwitchApi.ClientSecret is not string clientSecret)
+            if (Program.Config.TwitchApi.ClientId is not string clientId ||
+                Program.Config.TwitchApi.ClientSecret is not string clientSecret)
                 return; // No Twitch API credentials configured
             var settings = new ApiSettings()
             {
@@ -99,7 +99,7 @@ namespace LoneArenaDmaRadar.Web.Twitch
                 if (replacedName is null)
                     return null;
 
-                Debug.WriteLine($"[Twitch] Checking {username}...");
+                Logging.WriteLine($"[Twitch] Checking {username}...");
                 string channel = await LookupTwitchApiAsync(replacedName);
                 _cache[username] = new CachedTwitchEntry()
                 {

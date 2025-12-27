@@ -1,9 +1,11 @@
 {
 	"mapID": ["Arena_AutoService"],
+	"name" : "Chop Shop",
 	"x": 6210.5,
 	"y": 7800,
 	"scale": 15,
 	"svgScale" : 2.00,
+	"disableDimming" : true,
 	"mapLayers": [
 		{
 			"minHeight": null,

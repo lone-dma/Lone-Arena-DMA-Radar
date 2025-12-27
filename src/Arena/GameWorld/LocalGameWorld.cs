@@ -29,7 +29,6 @@ SOFTWARE.
 using LoneArenaDmaRadar.Arena.GameWorld.Explosives;
 using LoneArenaDmaRadar.Arena.GameWorld.Player;
 using LoneArenaDmaRadar.Arena.Mono;
-using LoneArenaDmaRadar.Misc;
 using LoneArenaDmaRadar.Misc.Workers;
 using VmmSharpEx.Options;
 
@@ -148,17 +147,16 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
         {
             while (true)
             {
-                ResourceJanitor.Run();
                 Memory.ThrowIfProcessNotRunning();
                 try
                 {
                     var instance = GetLocalGameWorld();
-                    Debug.WriteLine("Raid has started!");
+                    Logging.WriteLine("Raid has started!");
                     return instance;
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"ERROR Instantiating Game Instance: {ex}");
+                    Logging.WriteLine($"ERROR Instantiating Game Instance: {ex}");
                 }
                 finally
                 {
@@ -184,8 +182,8 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
                 var localGameWorld = Memory.ReadPtr(MonoLib.GameWorldField, false); // Game world >> Local Game World
                 /// Get Selected Map
                 var mapPtr = Memory.ReadValue<ulong>(localGameWorld + Offsets.GameWorld.Location, false);
-                var map = Memory.ReadUnicodeString(mapPtr, 64, false);
-                Debug.WriteLine("Detected Map " + map);
+                var map = Memory.ReadUnityString(mapPtr, 64, false);
+                Logging.WriteLine("Detected Map " + map);
                 /// Get Raid Instance / Players List
                 var inMatch = Memory.ReadValue<bool>(localGameWorld + Offsets.ClientLocalGameWorld.IsInRaid, false);
                 if (!inMatch)
@@ -216,12 +214,12 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
             }
             catch (OperationCanceledException ex) // Raid Ended
             {
-                Debug.WriteLine(ex.Message);
+                Logging.WriteLine(ex.Message);
                 Dispose();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CRITICAL ERROR - Raid ended due to unhandled exception: {ex}");
+                Logging.WriteLine($"CRITICAL ERROR - Raid ended due to unhandled exception: {ex}");
                 throw;
             }
         }
@@ -303,7 +301,7 @@ namespace LoneArenaDmaRadar.Arena.GameWorld
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CRITICAL ERROR - ValidatePlayerTransforms Loop FAILED: {ex}");
+                Logging.WriteLine($"CRITICAL ERROR - ValidatePlayerTransforms Loop FAILED: {ex}");
             }
         }
 

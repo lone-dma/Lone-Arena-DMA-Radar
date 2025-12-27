@@ -26,6 +26,8 @@ SOFTWARE.
  *
 */
 
+using LoneArenaDmaRadar.UI.Widgets;
+
 namespace LoneArenaDmaRadar.UI.Skia
 {
     internal static class SKPaints
@@ -228,6 +230,60 @@ namespace LoneArenaDmaRadar.UI.Skia
             /*StrokeWidth = ??,*/ // Compute before use
             Style = SKPaintStyle.Stroke,
             IsAntialias = true,
+        };
+
+        #endregion
+
+        #region ESP Widget Paints
+
+        public static SKPaint PaintAimviewWidgetCrosshair { get; } = new()
+        {
+            Color = SKColors.White,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke,
+            IsAntialias = true
+        };
+
+        public static SKPaint PaintAimviewWidgetLocalPlayer { get; } = new()
+        {
+            Color = SKColors.Green,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke
+        };
+
+        public static SKPaint PaintAimviewWidgetPMC { get; } = new()
+        {
+            Color = SKColors.Red,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke
+        };
+
+        public static SKPaint PaintAimviewWidgetTeammate { get; } = new()
+        {
+            Color = SKColors.LimeGreen,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke
+        };
+
+        public static SKPaint PaintAimviewWidgetAI { get; } = new()
+        {
+            Color = SKColors.Yellow,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke
+        };
+
+        public static SKPaint PaintAimviewWidgetStreamer { get; } = new()
+        {
+            Color = SKColors.MediumPurple,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke
+        };
+
+        public static SKPaint PaintAimviewWidgetFocused { get; } = new()
+        {
+            Color = SKColors.Coral,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke
         };
 
         #endregion

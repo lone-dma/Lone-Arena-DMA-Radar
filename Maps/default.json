@@ -1,9 +1,11 @@
 {
 	"mapID": [ "default" ],
+	"name" : "Unknown",
 	"x": 640,
 	"y": 360,
 	"scale": 1.00,
 	"svgScale": 1.00,
+	"disableDimming" : true,
 	"mapLayers": [
 		{
 			"minHeight": null,

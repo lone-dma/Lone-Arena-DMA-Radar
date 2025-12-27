@@ -1,9 +1,11 @@
 {
 	"mapID": ["Arena_Yard"],
+	"name" : "Block",
 	"x": 923.5,
 	"y": 1307.5,
 	"scale": 9.5,
 	"svgScale": 2.00,
+	"disableDimming" : true,
 	"mapLayers": [
 		{
 			"minHeight": null,
