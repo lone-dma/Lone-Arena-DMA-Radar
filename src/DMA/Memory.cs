@@ -123,7 +123,6 @@ namespace LoneArenaDmaRadar.DMA
                     {
                         EnableMemoryWriting = false
                     };
-                    AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
                     _vmm.RegisterAutoRefresh(RefreshOption.MemoryPartial, TimeSpan.FromMilliseconds(300));
                     _vmm.RegisterAutoRefresh(RefreshOption.TlbPartial, TimeSpan.FromSeconds(2));
                     try
@@ -162,12 +161,6 @@ namespace LoneArenaDmaRadar.DMA
                     "4. Make sure all Setup Steps are completed (See DMA Setup Guide/Wiki for additional troubleshooting).");
                 }
             });
-        }
-
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
-        {
-            _vmm.Dispose();
-            _vmm = null;
         }
 
         /// <summary>
