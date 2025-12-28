@@ -75,10 +75,6 @@ namespace LoneArenaDmaRadar.UI
         private static bool _isMapFreeEnabled;
         private static Vector2 _mapPanPosition;
 
-        // Skia resource purging
-        private static long _nextSkiaPurgeTicks = 0;
-        private static readonly long _skiaPurgeIntervalTicks = TimeSpan.FromSeconds(2).Ticks;
-
         #endregion
 
         #region Static Properties
@@ -366,13 +362,8 @@ namespace LoneArenaDmaRadar.UI
                 canvas.Flush();
                 _grContext.Flush();
 
-                // Throttle Skia resource purging to avoid GPU resource churn stutters.
-                var nowTicks = Stopwatch.GetTimestamp();
-                if (nowTicks >= _nextSkiaPurgeTicks)
-                {
-                    _grContext.PurgeUnlockedResources(false);
-                    _nextSkiaPurgeTicks = nowTicks + _skiaPurgeIntervalTicks;
-                }
+                // Purge unlocked resources to prevent memory bloat
+                _grContext.PurgeUnlockedResources(false);
 
                 // Render AimviewWidget to its FBO (during Skia phase, before ImGui)
                 AimviewWidget.RenderToFbo();
