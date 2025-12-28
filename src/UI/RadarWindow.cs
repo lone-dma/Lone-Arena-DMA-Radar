@@ -147,6 +147,7 @@ namespace LoneArenaDmaRadar.UI
         private static void OnLoad()
         {
             _gl = GL.GetApi(_window);
+            _gl.ClearColor(0f, 0f, 0f, 1f);
 
             // Apply dark mode and window icon (Windows only)
             if (_window.Native?.Win32 is { } win32)
@@ -325,7 +326,6 @@ namespace LoneArenaDmaRadar.UI
                 _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
                 // Explicitly clear the backbuffer to avoid blending against stale pixels.
-                _gl.ClearColor(0f, 0f, 0f, 1f);
                 _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.StencilBufferBit | ClearBufferMask.DepthBufferBit);
 
                 var canvas = _skSurface.Canvas;
