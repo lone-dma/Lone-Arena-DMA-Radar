@@ -632,6 +632,15 @@ namespace LoneArenaDmaRadar.DMA
             throw new ProcessNotRunningException();
         }
 
+        /// <summary>
+        /// Close the FPGA DMA Connection.
+        /// </summary>
+        public static void Close()
+        {
+            _vmm?.Dispose();
+            _vmm = null;
+        }
+
         private sealed class ProcessNotRunningException : Exception
         {
             public ProcessNotRunningException()

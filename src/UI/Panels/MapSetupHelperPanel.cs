@@ -54,6 +54,8 @@ namespace LoneArenaDmaRadar.UI.Panels
         private const float ScanStep = 25f;
         private const int ScanIntervalMs = 150;
 
+        private static ArenaDmaConfig Config { get; } = Program.Config;
+
         /// <summary>
         /// Whether the map setup helper panel is open.
         /// </summary>

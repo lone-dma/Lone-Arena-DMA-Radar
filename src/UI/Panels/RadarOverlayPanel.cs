@@ -35,6 +35,8 @@ namespace LoneArenaDmaRadar.UI.Panels
     /// </summary>
     internal static class RadarOverlayPanel
     {
+        private static ArenaDmaConfig Config { get; } = Program.Config;
+
         /// <summary>
         /// Draw the overlay controls at the top of the radar.
         /// </summary>

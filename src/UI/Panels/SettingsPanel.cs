@@ -42,6 +42,8 @@ namespace LoneArenaDmaRadar.UI.Panels
         // Panel-local state for tracking window open/close
         private static bool _isOpen;
 
+        private static ArenaDmaConfig Config { get; } = Program.Config;
+
         /// <summary>
         /// Whether the settings panel is open.
         /// </summary>
@@ -57,7 +59,7 @@ namespace LoneArenaDmaRadar.UI.Panels
         public static void Initialize()
         {
             // Apply UI scale from config at startup
-            UpdateScaleValues(Program.Config.UI.UIScale);
+            UpdateScaleValues(Config.UI.UIScale);
         }
 
         /// <summary>
@@ -138,39 +140,39 @@ namespace LoneArenaDmaRadar.UI.Panels
                 ImGui.SeparatorText("Display Settings");
 
                 // UI Scale
-                float uiScale = Program.Config.UI.UIScale;
+                float uiScale = Config.UI.UIScale;
                 if (ImGui.SliderFloat("UI Scale", ref uiScale, 0.5f, 2.0f, "%.1f"))
                 {
-                    Program.Config.UI.UIScale = uiScale;
+                    Config.UI.UIScale = uiScale;
                     UpdateScaleValues(uiScale);
                 }
                 if (ImGui.IsItemHovered())
                     ImGui.SetTooltip("Scale UI elements (text, icons, widgets)");
 
                 // Zoom
-                int zoom = Program.Config.UI.Zoom;
+                int zoom = Config.UI.Zoom;
                 if (ImGui.SliderInt("Zoom (F1/F2)", ref zoom, 1, 200))
                 {
-                    Program.Config.UI.Zoom = zoom;
+                    Config.UI.Zoom = zoom;
                 }
                 if (ImGui.IsItemHovered())
                     ImGui.SetTooltip("Map zoom level (lower = more zoomed in)");
 
                 // Aimline Length
-                int aimlineLength = Program.Config.UI.AimLineLength;
+                int aimlineLength = Config.UI.AimLineLength;
                 if (ImGui.SliderInt("Aimline Length", ref aimlineLength, 0, 1500))
                 {
-                    Program.Config.UI.AimLineLength = aimlineLength;
+                    Config.UI.AimLineLength = aimlineLength;
                 }
                 if (ImGui.IsItemHovered())
                     ImGui.SetTooltip("Length of player aim direction lines");
 
                 ImGui.SeparatorText("Widgets");
 
-                bool aimviewWidget = Program.Config.AimviewWidget.Enabled;
+                bool aimviewWidget = Config.AimviewWidget.Enabled;
                 if (ImGui.Checkbox("Aimview Widget", ref aimviewWidget))
                 {
-                    Program.Config.AimviewWidget.Enabled = aimviewWidget;
+                    Config.AimviewWidget.Enabled = aimviewWidget;
                 }
                 if (ImGui.IsItemHovered())
                     ImGui.SetTooltip("3D view showing players in your field of view");
