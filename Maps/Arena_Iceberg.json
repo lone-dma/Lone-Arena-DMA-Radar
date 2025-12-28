@@ -1,9 +1,11 @@
 {
 	"mapID": ["Arena_Iceberg"],
+	"name" : "Iceberg",
 	"x": 356,
 	"y": -198,
 	"scale": 5.9,
 	"svgScale" : 2.00,
+	"disableDimming" : true,
 	"mapLayers": [
 		{
 			"minHeight": null,
