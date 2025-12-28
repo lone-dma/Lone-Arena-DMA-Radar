@@ -47,6 +47,8 @@ namespace LoneArenaDmaRadar.UI.Hotkeys
         private static Win32VirtualKey? _keyToRemove;
         private static bool _initialized;
 
+        private static ArenaDmaConfig Config { get; } = Program.Config;
+
         /// <summary>
         /// Whether the hotkey manager panel is open.
         /// </summary>

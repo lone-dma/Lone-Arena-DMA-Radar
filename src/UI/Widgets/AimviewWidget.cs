@@ -63,13 +63,15 @@ namespace LoneArenaDmaRadar.UI.Widgets
         // Aimview camera state
         private static Vector3 _forward, _right, _up, _camPos;
 
+        private static ArenaDmaConfig Config { get; } = Program.Config;
+
         /// <summary>
         /// Whether the Aimview panel is open.
         /// </summary>
         public static bool IsOpen
         {
-            get => Program.Config.AimviewWidget.Enabled;
-            set => Program.Config.AimviewWidget.Enabled = value;
+            get => Config.AimviewWidget.Enabled;
+            set => Config.AimviewWidget.Enabled = value;
         }
 
         // Data sources
@@ -210,7 +212,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
             if (players is null)
                 return;
 
-            float scale = Program.Config.UI.UIScale;
+            float scale = Config.UI.UIScale;
             float minRadius = 1.5f * scale;
             float maxRadius = 8f * scale;
 
@@ -380,11 +382,6 @@ namespace LoneArenaDmaRadar.UI.Widgets
                 _gl.DeleteRenderbuffer(_depthRbo);
                 _depthRbo = 0;
             }
-        }
-
-        public static void Cleanup()
-        {
-            DestroyFbo();
         }
 
         #endregion

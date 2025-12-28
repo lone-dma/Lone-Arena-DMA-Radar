@@ -79,6 +79,7 @@ namespace LoneArenaDmaRadar.UI
 
         #region Static Properties
 
+        private static ArenaDmaConfig Config { get; } = Program.Config;
         public static IntPtr Handle => _window?.Native?.Win32?.Hwnd ?? IntPtr.Zero;
         private static bool Starting => Memory.Starting;
         private static bool Ready => Memory.Ready;
@@ -114,16 +115,16 @@ namespace LoneArenaDmaRadar.UI
         {
             var options = WindowOptions.Default;
             options.Size = new Vector2D<int>(
-                (int)Program.Config.UI.WindowSize.Width,
-                (int)Program.Config.UI.WindowSize.Height);
+                (int)Config.UI.WindowSize.Width,
+                (int)Config.UI.WindowSize.Height);
             options.Title = Program.Name;
             options.VSync = false;
-            options.FramesPerSecond = Program.Config.UI.FPS;
+            options.FramesPerSecond = Config.UI.FPS;
             options.PreferredStencilBufferBits = 8;
             options.PreferredBitDepth = new Vector4D<int>(8, 8, 8, 8);
 
             // Restore maximized state from config (not fullscreen)
-            if (Program.Config.UI.WindowMaximized)
+            if (Config.UI.WindowMaximized)
             {
                 options.WindowState = WindowState.Maximized;
             }
@@ -282,7 +283,7 @@ namespace LoneArenaDmaRadar.UI
             // Note: Fullscreen (hidden border + maximized) is NOT persisted - only regular maximized
             if (_window.WindowBorder == WindowBorder.Resizable)
             {
-                Program.Config.UI.WindowMaximized = (state == WindowState.Maximized);
+                Config.UI.WindowMaximized = (state == WindowState.Maximized);
             }
         }
 
@@ -291,28 +292,11 @@ namespace LoneArenaDmaRadar.UI
             // Save window state - only save size if not maximized/fullscreen
             if (_window.WindowState == WindowState.Normal)
             {
-                Program.Config.UI.WindowSize = new System.Drawing.Size(_window.Size.X, _window.Size.Y);
+                Config.UI.WindowSize = new System.Drawing.Size(_window.Size.X, _window.Size.Y);
             }
 
-            Program.Config.UI.WindowMaximized = _window.WindowState == WindowState.Maximized;
-            Program.Config.Save();
-
-            // Cleanup resources
-            AimviewWidget.Cleanup();
-
-            var grContext = Interlocked.Exchange(ref _grContext, null);
-            var skBackendRenderTarget = Interlocked.Exchange(ref _skBackendRenderTarget, null);
-            var skSurface = Interlocked.Exchange(ref _skSurface, null);
-            var input = Interlocked.Exchange(ref _input, null);
-            var gl = Interlocked.Exchange(ref _gl, null);
-            var imgui = Interlocked.Exchange(ref _imgui, null);
-
-            imgui?.Dispose();
-            skSurface?.Dispose();
-            skBackendRenderTarget?.Dispose();
-            grContext?.Dispose();
-            input?.Dispose();
-            gl?.Dispose();
+            Config.UI.WindowMaximized = _window.WindowState == WindowState.Maximized;
+            // CurrentDomain_ProcessExit will execute after this point
         }
 
         #endregion
@@ -424,13 +408,13 @@ namespace LoneArenaDmaRadar.UI
                     _mapPanPosition = localPlayerMapPos;
                 }
                 var panPos = _mapPanPosition;
-                mapParams = map.GetParameters(canvasSize, Program.Config.UI.Zoom, ref panPos);
+                mapParams = map.GetParameters(canvasSize, Config.UI.Zoom, ref panPos);
                 _mapPanPosition = panPos;
             }
             else
             {
                 _mapPanPosition = default;
-                mapParams = map.GetParameters(canvasSize, Program.Config.UI.Zoom, ref localPlayerMapPos);
+                mapParams = map.GetParameters(canvasSize, Config.UI.Zoom, ref localPlayerMapPos);
             }
 
             var mapCanvasBounds = new SKRect(0, 0, canvasSize.Width, canvasSize.Height);
@@ -667,8 +651,8 @@ namespace LoneArenaDmaRadar.UI
             if (!ImGui.GetIO().WantCaptureMouse)
             {
                 int delta = (int)(wheel.Y * 5);
-                int newZoom = Program.Config.UI.Zoom - delta;
-                Program.Config.UI.Zoom = Math.Clamp(newZoom, 1, 200);
+                int newZoom = Config.UI.Zoom - delta;
+                Config.UI.Zoom = Math.Clamp(newZoom, 1, 200);
             }
         }
 
@@ -726,7 +710,7 @@ namespace LoneArenaDmaRadar.UI
         private static IEnumerable<IMouseoverEntity> GetMouseoverItems()
         {
             var players = AllPlayers?
-                .Where(x => x is not LoneArenaDmaRadar.Arena.GameWorld.Player.LocalPlayer && !x.HasExfild && (!Program.Config.UI.HighAlert || x.IsAlive)) ??
+                .Where(x => x is not LoneArenaDmaRadar.Arena.GameWorld.Player.LocalPlayer && !x.HasExfild && (!Config.UI.HighAlert || x.IsAlive)) ??
                 Enumerable.Empty<AbstractPlayer>();
 
             using var enumerator = players.GetEnumerator();
@@ -793,7 +777,7 @@ namespace LoneArenaDmaRadar.UI
         private static void ToggleAimviewWidget_HotkeyStateChanged(bool isKeyDown)
         {
             if (isKeyDown)
-                Program.Config.AimviewWidget.Enabled = !Program.Config.AimviewWidget.Enabled;
+                Config.AimviewWidget.Enabled = !Config.AimviewWidget.Enabled;
         }
 
         [Hotkey("Zoom Out", HotkeyType.OnIntervalElapsed, HK_ZOOMTICKDELAY)]
@@ -815,7 +799,7 @@ namespace LoneArenaDmaRadar.UI
         /// </summary>
         public static void ZoomIn(int amt)
         {
-            Program.Config.UI.Zoom = Math.Max(1, Program.Config.UI.Zoom - amt);
+            Config.UI.Zoom = Math.Max(1, Config.UI.Zoom - amt);
         }
 
         /// <summary>
@@ -823,7 +807,7 @@ namespace LoneArenaDmaRadar.UI
         /// </summary>
         public static void ZoomOut(int amt)
         {
-            Program.Config.UI.Zoom = Math.Min(200, Program.Config.UI.Zoom + amt);
+            Config.UI.Zoom = Math.Min(200, Config.UI.Zoom + amt);
         }
 
         private static async Task RunFpsTimerAsync()
