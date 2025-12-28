@@ -329,21 +329,9 @@ namespace LoneArenaDmaRadar.UI
                 _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.StencilBufferBit | ClearBufferMask.DepthBufferBit);
 
                 var canvas = _skSurface.Canvas;
-
-                // Save the initial canvas state
-                canvas.Save();
-                try
-                {
-                    canvas.Clear(SKColors.Black);
-                    DrawRadarScene(canvas);
-                }
-                finally
-                {
-                    // Always restore canvas to initial state, even if DrawRadarScene throws
-                    canvas.RestoreToCount(0);
-                }
-
+                DrawRadarScene(canvas);
                 canvas.Flush();
+
                 _grContext.Flush();
 
                 // Purge unlocked resources to prevent memory bloat
@@ -360,7 +348,6 @@ namespace LoneArenaDmaRadar.UI
                 _imgui.Update((float)delta);
                 DrawImGuiUI();
                 _imgui.Render();
-
             }
             catch (Exception ex)
             {
