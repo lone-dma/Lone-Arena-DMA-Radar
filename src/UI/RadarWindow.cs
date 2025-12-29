@@ -147,7 +147,6 @@ namespace LoneArenaDmaRadar.UI
         private static void OnLoad()
         {
             _gl = GL.GetApi(_window);
-            _gl.ClearColor(0f, 0f, 0f, 1f);
 
             // Apply dark mode and window icon (Windows only)
             if (_window.Native?.Win32 is { } win32)
