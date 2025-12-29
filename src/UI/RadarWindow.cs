@@ -304,6 +304,8 @@ namespace LoneArenaDmaRadar.UI
 
         #region Render Loop
 
+        private static readonly RateLimiter _purgeRL = new(TimeSpan.FromSeconds(1));
+
         /// <summary>
         /// Main Render Loop.
         /// </summary>
@@ -317,41 +319,98 @@ namespace LoneArenaDmaRadar.UI
                 return;
             try
             {
-                _grContext.ResetContext();
+                // Frame Setup
                 Interlocked.Increment(ref _fpsCounter);
+                _grContext.ResetContext();
+                if (_purgeRL.TryEnter())
+                {
+                    _grContext.PurgeUnlockedResources(false);
+                }
 
-                // --- SCENE RENDER (Skia) ---
+                // Scene Render (Skia)
                 var fbSize = _window.FramebufferSize;
-                _gl.Viewport(0, 0, (uint)fbSize.X, (uint)fbSize.Y);
-                _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+                DrawRadarScene(ref fbSize);
+                AimviewWidget.Render();
 
-                // Explicitly clear the backbuffer to avoid blending against stale pixels.
-                _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.StencilBufferBit | ClearBufferMask.DepthBufferBit);
-
-                var canvas = _skSurface.Canvas;
-                DrawRadarScene(canvas);
-                canvas.Flush();
-
-                _grContext.Flush();
-
-                // Purge unlocked resources to prevent memory bloat
-                _grContext.PurgeUnlockedResources(false);
-
-                // Render AimviewWidget to its FBO (during Skia phase, before ImGui)
-                AimviewWidget.RenderToFbo();
-
-                // Restore viewport to full window after FBO rendering
-                _gl.Viewport(0, 0, (uint)fbSize.X, (uint)fbSize.Y);
-                _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-
-                // --- UI RENDER (ImGui) ---
-                _imgui.Update((float)delta);
-                DrawImGuiUI();
-                _imgui.Render();
+                // UI Render (ImGui)
+                DrawImGuiUI(ref fbSize, delta);
             }
             catch (Exception ex)
             {
                 Logging.WriteLine($"***** CRITICAL RENDER ERROR: {ex}");
+            }
+        }
+
+        private static void DrawRadarScene(ref Vector2D<int> fbSize)
+        {
+            _gl.Viewport(0, 0, (uint)fbSize.X, (uint)fbSize.Y);
+            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+            // Explicitly clear the backbuffer to avoid blending against stale pixels.
+            _gl.ClearColor(0f, 0f, 0f, 1f); // BLACK
+            _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.StencilBufferBit | ClearBufferMask.DepthBufferBit);
+
+            var canvas = _skSurface.Canvas;
+            try
+            {
+                var isStarting = Starting;
+                var isReady = Ready;
+                var inRaid = InRaid;
+
+                if (inRaid && LocalPlayer is LocalPlayer localPlayer && EftMapManager.LoadMap(MapID) is IEftMap map)
+                {
+                    DrawInRaidRadar(canvas, localPlayer, map);
+                }
+                else
+                {
+                    EftMapManager.Cleanup();
+                    DrawStatusMessage(canvas, isStarting, isReady);
+                }
+            }
+            finally
+            {
+                canvas.Flush();
+                _grContext.Flush();
+            }
+        }
+
+        private static void DrawImGuiUI(ref Vector2D<int> fbSize, double delta)
+        {
+            _gl.Viewport(0, 0, (uint)fbSize.X, (uint)fbSize.Y);
+            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            _imgui.Update((float)delta);
+            try
+            {
+                // Draw overlay controls
+                RadarOverlayPanel.DrawTopBar();
+                RadarOverlayPanel.DrawMapSetupHelper();
+
+                // Draw main menu bar
+                if (ImGui.BeginMainMenuBar())
+                {
+                    if (ImGui.MenuItem("Settings", null, SettingsPanel.IsOpen))
+                    {
+                        SettingsPanel.IsOpen = !SettingsPanel.IsOpen;
+                    }
+
+                    ImGui.Separator();
+
+                    // Display current map and FPS on the right
+                    string mapName = EftMapManager.Map?.Config?.Name ?? "No Map";
+                    string rightText = $"{mapName} | {_fps} FPS";
+                    float rightTextWidth = ImGui.CalcTextSize(rightText).X;
+                    ImGui.SetCursorPosX(ImGui.GetWindowWidth() - rightTextWidth - 10);
+                    ImGui.Text(rightText);
+
+                    ImGui.EndMainMenuBar();
+                }
+
+                // Draw windows
+                DrawWindows();
+            }
+            finally
+            {
+                _imgui.Render();
             }
         }
 

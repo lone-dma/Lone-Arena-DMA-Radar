@@ -88,7 +88,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
         /// <summary>
         /// Called from the Skia render phase (before ImGui) to render to the FBO.
         /// </summary>
-        public static void RenderToFbo()
+        public static void Render()
         {
             if (_surface is null || _fbo == 0)
                 return;
@@ -100,9 +100,12 @@ namespace LoneArenaDmaRadar.UI.Widgets
             _gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
             _gl.Viewport(0, 0, (uint)width, (uint)height);
 
+            // Explicitly clear the backbuffer to avoid blending against stale pixels.
+            _gl.ClearColor(0f, 0f, 0f, 0f); // TRANSPARENT
+            _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.StencilBufferBit | ClearBufferMask.DepthBufferBit);
+
             // Draw to Skia surface
             var canvas = _surface.Canvas;
-            canvas.Clear(SKColors.Transparent);
 
             try
             {
