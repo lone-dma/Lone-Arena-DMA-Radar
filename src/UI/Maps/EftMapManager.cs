@@ -116,6 +116,7 @@ namespace LoneArenaDmaRadar.UI.Maps
         {
             Map?.Dispose();
             Map = null;
+            _loadedMap = null;
         }
     }
 }

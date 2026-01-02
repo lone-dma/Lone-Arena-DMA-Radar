@@ -413,23 +413,6 @@ namespace LoneArenaDmaRadar.UI
             }
         }
 
-        private static void DrawRadarScene(SKCanvas canvas)
-        {
-            var isStarting = Starting;
-            var isReady = Ready;
-            var inRaid = InRaid;
-
-            if (inRaid && LocalPlayer is LocalPlayer localPlayer && EftMapManager.LoadMap(MapID) is IEftMap map)
-            {
-                DrawInRaidRadar(canvas, localPlayer, map);
-            }
-            else
-            {
-                EftMapManager.Cleanup();
-                DrawStatusMessage(canvas, isStarting, isReady);
-            }
-        }
-
         private static void DrawInRaidRadar(SKCanvas canvas, LocalPlayer localPlayer, IEftMap map)
         {
             var closestToMouse = _mouseOverItem;
