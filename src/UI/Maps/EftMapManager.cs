@@ -39,7 +39,6 @@ namespace LoneArenaDmaRadar.UI.Maps
     {
         private static ZipArchive _zip;
         private static FrozenDictionary<string, EftMapConfig> _maps;
-        private static string _loadedMap;
 
         /// <summary>
         /// Currently Loaded Map.
@@ -92,14 +91,13 @@ namespace LoneArenaDmaRadar.UI.Maps
         {
             try
             {
-                if (_loadedMap?.Equals(mapId, StringComparison.OrdinalIgnoreCase) ?? false)
+                if (Map?.ID?.Equals(mapId, StringComparison.OrdinalIgnoreCase) ?? false)
                     return Map;
                 if (!_maps.TryGetValue(mapId, out var newMap))
                     newMap = _maps["default"];
                 Map?.Dispose();
                 Map = null;
                 Map = new EftSvgMap(_zip, mapId, newMap);
-                _loadedMap = mapId;
                 return Map;
             }
             catch (Exception ex)
@@ -116,7 +114,6 @@ namespace LoneArenaDmaRadar.UI.Maps
         {
             Map?.Dispose();
             Map = null;
-            _loadedMap = null;
         }
     }
 }
