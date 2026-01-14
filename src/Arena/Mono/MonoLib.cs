@@ -62,7 +62,7 @@ namespace LoneArenaDmaRadar.Arena.Mono
     internal static class MonoLib
     {
         /// <summary>
-        /// GameWorld Mono Field. Can be deref'd for a new LocalGameWorld instance each raid.
+        /// World Mono Field. Can be deref'd for a new World instance each raid.
         /// </summary>
         public static ulong GameWorldField { get; private set; }
         /// <summary>

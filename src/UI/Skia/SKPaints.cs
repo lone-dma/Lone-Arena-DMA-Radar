@@ -52,13 +52,13 @@ namespace LoneArenaDmaRadar.UI.Skia
 
         public static SKPaint PaintBitmap { get; } = new()
         {
-            IsAntialias = true,
+            IsAntialias = false
         };
 
         public static SKPaint PaintBitmapAlpha { get; } = new()
         {
             Color = SKColor.Empty.WithAlpha(127),
-            IsAntialias = true,
+            IsAntialias = false,
         };
 
         public static SKPaint PaintLocalPlayer { get; } = new()
@@ -251,7 +251,7 @@ namespace LoneArenaDmaRadar.UI.Skia
             Style = SKPaintStyle.Stroke
         };
 
-        public static SKPaint PaintAimviewWidgetPMC { get; } = new()
+        public static SKPaint PaintAimviewWidgetPlayer { get; } = new()
         {
             Color = SKColors.Red,
             StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
@@ -265,16 +265,23 @@ namespace LoneArenaDmaRadar.UI.Skia
             Style = SKPaintStyle.Stroke
         };
 
-        public static SKPaint PaintAimviewWidgetAI { get; } = new()
+        public static SKPaint PaintAimviewWidgetStreamer { get; } = new()
+        {
+            Color = SKColors.MediumPurple,
+            StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
+            Style = SKPaintStyle.Stroke
+        };
+
+        public static SKPaint PaintAimviewWidgetBot { get; } = new()
         {
             Color = SKColors.Yellow,
             StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
             Style = SKPaintStyle.Stroke
         };
 
-        public static SKPaint PaintAimviewWidgetStreamer { get; } = new()
+        public static SKPaint PaintAimviewWidgetRaider { get; } = new()
         {
-            Color = SKColors.MediumPurple,
+            Color = SKColor.Parse("ffc70f"),
             StrokeWidth = AimviewWidget.AimviewBaseStrokeSize,
             Style = SKPaintStyle.Stroke
         };
@@ -287,5 +294,6 @@ namespace LoneArenaDmaRadar.UI.Skia
         };
 
         #endregion
+
     }
 }

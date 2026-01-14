@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11123.170
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lone-Arena-DMA-Radar", "Lone-Arena-DMA-Radar.csproj", "{A18BE45C-0185-4ACF-B50C-1D1C5CE726C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lone-Arena-DMA-Radar", "Lone-Arena-DMA-Radar.csproj", "{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A18BE45C-0185-4ACF-B50C-1D1C5CE726C7}.Debug|x64.ActiveCfg = Debug|x64
-		{A18BE45C-0185-4ACF-B50C-1D1C5CE726C7}.Debug|x64.Build.0 = Debug|x64
-		{A18BE45C-0185-4ACF-B50C-1D1C5CE726C7}.Release|x64.ActiveCfg = Release|x64
-		{A18BE45C-0185-4ACF-B50C-1D1C5CE726C7}.Release|x64.Build.0 = Release|x64
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Debug|x64.ActiveCfg = Debug|x64
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Debug|x64.Build.0 = Debug|x64
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Release|x64.ActiveCfg = Release|x64
+		{CECCDC78-5CEF-FBA2-83C9-43403EE2EB21}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

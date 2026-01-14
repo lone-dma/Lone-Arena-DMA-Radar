@@ -1,0 +1,16 @@
+{
+	"mapID": [ "default" ],
+	"name" : "Unknown",
+	"x": 640,
+	"y": 360,
+	"scale": 1.00,
+	"rasterScale": 1.00,
+	"disableDimming" : true,
+	"mapLayers": [
+		{
+			"minHeight": null,
+			"maxHeight": null,
+			"filename": "default.svg"
+		}
+	]
+}

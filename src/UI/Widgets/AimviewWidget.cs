@@ -27,7 +27,7 @@ SOFTWARE.
 */
 
 using ImGuiNET;
-using LoneArenaDmaRadar.Arena.GameWorld.Player;
+using LoneArenaDmaRadar.Arena.World.Player;
 using LoneArenaDmaRadar.UI.Skia;
 using Silk.NET.OpenGL;
 
@@ -40,6 +40,8 @@ namespace LoneArenaDmaRadar.UI.Widgets
     {
         // Constants
         public const float AimviewBaseStrokeSize = 1.33f;
+        private const float LOOT_RENDER_DISTANCE = 10f;
+        private const float CONTAINER_RENDER_DISTANCE = 10f;
 
         private static GL _gl;
         private static GRContext _grContext;
@@ -63,15 +65,13 @@ namespace LoneArenaDmaRadar.UI.Widgets
         // Aimview camera state
         private static Vector3 _forward, _right, _up, _camPos;
 
-        private static ArenaDmaConfig Config { get; } = Program.Config;
-
         /// <summary>
         /// Whether the Aimview panel is open.
         /// </summary>
         public static bool IsOpen
         {
-            get => Config.AimviewWidget.Enabled;
-            set => Config.AimviewWidget.Enabled = value;
+            get => Program.Config.AimviewWidget.Enabled;
+            set => Program.Config.AimviewWidget.Enabled = value;
         }
 
         // Data sources
@@ -215,9 +215,9 @@ namespace LoneArenaDmaRadar.UI.Widgets
             if (players is null)
                 return;
 
-            float scale = Config.UI.UIScale;
+            float scale = Program.Config.UI.UIScale;
             float minRadius = 1.5f * scale;
-            float maxRadius = 8f * scale;
+            float maxRadius = 12f * scale;
 
             foreach (var player in players)
             {
@@ -252,10 +252,10 @@ namespace LoneArenaDmaRadar.UI.Widgets
             return player.Type switch
             {
                 PlayerType.Teammate => SKPaints.PaintAimviewWidgetTeammate,
-                PlayerType.Player => SKPaints.PaintAimviewWidgetPMC,
-                PlayerType.Bot => SKPaints.PaintAimviewWidgetAI,
+                PlayerType.Player => SKPaints.PaintAimviewWidgetPlayer,
+                PlayerType.Bot => SKPaints.PaintAimviewWidgetBot,
                 PlayerType.Streamer => SKPaints.PaintAimviewWidgetStreamer,
-                _ => SKPaints.PaintAimviewWidgetPMC
+                _ => SKPaints.PaintAimviewWidgetPlayer
             };
         }
 
