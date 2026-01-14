@@ -10,14 +10,8 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Platforms>x64</Platforms>
 	<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-	<ApplicationIcon>..\Resources\lone-icon.ico</ApplicationIcon>
+	<ApplicationIcon>Resources\lone-icon.ico</ApplicationIcon>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="old\**" />
-    <EmbeddedResource Remove="old\**" />
-    <None Remove="old\**" />
-  </ItemGroup>
 
 	<PropertyGroup>
 		<!-- GC Tuning for optimal performance -->
@@ -55,14 +49,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Include="..\Resources\Maps.bin">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
+		<EmbeddedResource Include="Resources\**\*.*" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\Resources\NeoSansStdRegular.otf" />
+	  <Compile Remove="old\**" />
+	  <EmbeddedResource Remove="old\**" />
+	  <None Remove="old\**" />
 	</ItemGroup>
 
   <ItemGroup>

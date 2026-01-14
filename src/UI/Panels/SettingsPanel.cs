@@ -177,6 +177,16 @@ namespace LoneArenaDmaRadar.UI.Panels
                 if (ImGui.IsItemHovered())
                     ImGui.SetTooltip("3D view showing players in your field of view");
 
+                ImGui.SeparatorText("Visibility");
+
+                bool highAlert = Config.UI.HighAlert;
+                if (ImGui.Checkbox("High Alert", ref highAlert))
+                {
+                    Config.UI.HighAlert = highAlert;
+                }
+                if (ImGui.IsItemHovered())
+                    ImGui.SetTooltip("Show aimlines when other players aim at you.");
+
                 ImGui.EndTabItem();
             }
         }
@@ -238,21 +248,11 @@ namespace LoneArenaDmaRadar.UI.Panels
             SKPaints.PaintLocalPlayer.StrokeWidth = 1.66f * newScale;
             SKPaints.PaintTeammate.StrokeWidth = 1.66f * newScale;
             SKPaints.PaintPlayer.StrokeWidth = 1.66f * newScale;
-            SKPaints.PaintStreamer.StrokeWidth = 1.66f * newScale;
             SKPaints.PaintBot.StrokeWidth = 1.66f * newScale;
             SKPaints.PaintFocused.StrokeWidth = 1.66f * newScale;
             SKPaints.PaintDeathMarker.StrokeWidth = 3f * newScale;
             SKPaints.PaintTransparentBacker.StrokeWidth = 0.25f * newScale;
             SKPaints.PaintExplosives.StrokeWidth = 3f * newScale;
-
-            // Aimview widget paints
-            SKPaints.PaintAimviewWidgetCrosshair.StrokeWidth = Widgets.AimviewWidget.AimviewBaseStrokeSize * newScale;
-            SKPaints.PaintAimviewWidgetLocalPlayer.StrokeWidth = Widgets.AimviewWidget.AimviewBaseStrokeSize * newScale;
-            SKPaints.PaintAimviewWidgetPMC.StrokeWidth = Widgets.AimviewWidget.AimviewBaseStrokeSize * newScale;
-            SKPaints.PaintAimviewWidgetTeammate.StrokeWidth = Widgets.AimviewWidget.AimviewBaseStrokeSize * newScale;
-            SKPaints.PaintAimviewWidgetAI.StrokeWidth = Widgets.AimviewWidget.AimviewBaseStrokeSize * newScale;
-            SKPaints.PaintAimviewWidgetStreamer.StrokeWidth = Widgets.AimviewWidget.AimviewBaseStrokeSize * newScale;
-            SKPaints.PaintAimviewWidgetFocused.StrokeWidth = Widgets.AimviewWidget.AimviewBaseStrokeSize * newScale;
 
             // Fonts
             SKFonts.UIRegular.Size = 12f * newScale;

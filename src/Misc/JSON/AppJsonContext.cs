@@ -26,10 +26,9 @@ SOFTWARE.
  *
 */
 
-using LoneArenaDmaRadar.Arena.Unity.Structures;
 using LoneArenaDmaRadar.UI.ColorPicker;
 using LoneArenaDmaRadar.UI.Maps;
-using System.Drawing;
+using LoneArenaDmaRadar.Web.TarkovDev;
 using VmmSharpEx.Extensions.Input;
 
 namespace LoneArenaDmaRadar.Misc.JSON
@@ -54,26 +53,23 @@ namespace LoneArenaDmaRadar.Misc.JSON
     // Sub-configs
     [JsonSerializable(typeof(DMAConfig))]
     [JsonSerializable(typeof(UIConfig))]
-    [JsonSerializable(typeof(TwitchApiConfig))]
     [JsonSerializable(typeof(AimviewWidgetConfig))]
     // Enums
     [JsonSerializable(typeof(FpgaAlgo))]
     [JsonSerializable(typeof(ColorPickerOption))]
     [JsonSerializable(typeof(Win32VirtualKey))]
-    [JsonSerializable(typeof(UnityKeyCode))]
     // Dictionary types
     [JsonSerializable(typeof(ConcurrentDictionary<Win32VirtualKey, string>))]
-    [JsonSerializable(typeof(ConcurrentDictionary<UnityKeyCode, string>))]
     [JsonSerializable(typeof(ConcurrentDictionary<ColorPickerOption, string>))]
     [JsonSerializable(typeof(ConcurrentDictionary<string, byte>))]
+    [JsonSerializable(typeof(ConcurrentDictionary<int, int>))]
+    [JsonSerializable(typeof(ConcurrentDictionary<int, byte>))]
     // SkiaSharp types
     [JsonSerializable(typeof(SKSize))]
     [JsonSerializable(typeof(SKRect))]
     // System.Numerics types
     [JsonSerializable(typeof(Vector2))]
     [JsonSerializable(typeof(Vector3))]
-    // System.Drawing types
-    [JsonSerializable(typeof(Size))]
     // Collection types
     [JsonSerializable(typeof(HashSet<string>))]
     [JsonSerializable(typeof(Dictionary<string, string>))]
@@ -84,6 +80,10 @@ namespace LoneArenaDmaRadar.Misc.JSON
     [JsonSerializable(typeof(EftMapConfig.Layer))]
     [JsonSerializable(typeof(List<EftMapConfig.Layer>))]
     [JsonSerializable(typeof(List<string>))]
+    // TarkovDev API types
+    [JsonSerializable(typeof(TarkovMarketItem))]
+    // TarkovDev list types
+    [JsonSerializable(typeof(List<TarkovMarketItem>))]
     // Misc
     [JsonSerializable(typeof(JsonDocument))]
     public partial class AppJsonContext : JsonSerializerContext

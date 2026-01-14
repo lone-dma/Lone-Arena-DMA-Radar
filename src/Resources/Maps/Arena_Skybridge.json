@@ -1,0 +1,16 @@
+{
+	"mapID": ["Arena_RailwayStation"],
+	"name" : "Skybridge",
+	"x": 510,
+	"y": 260,
+	"scale": 7,
+	"rasterScale": 2.50,
+	"disableDimming" : true,
+	"mapLayers": [
+		{
+			"minHeight": null,
+			"maxHeight": null,
+			"filename": "Arena_Skybridge.svg"
+		}
+	]
+}

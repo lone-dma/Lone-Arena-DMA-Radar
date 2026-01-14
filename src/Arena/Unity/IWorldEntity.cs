@@ -29,7 +29,7 @@ SOFTWARE.
 namespace LoneArenaDmaRadar.Arena.Unity
 {
     /// <summary>
-    /// Defines an Entity that has a 3D GameWorld Position.
+    /// Defines an Entity that has a 3D World Position.
     /// </summary>
     public interface IWorldEntity
     {

@@ -1,0 +1,16 @@
+{
+	"mapID": ["Arena_Custom"],
+	"name" : "Dorms",
+	"x": -137,
+	"y": 211,
+	"scale": 1.00,
+	"rasterScale" : 4.00,
+	"disableDimming" : true,
+	"mapLayers": [
+		{
+			"minHeight": null,
+			"maxHeight": null,
+			"filename": "Arena_Dorms.svg"
+		}
+	]
+}

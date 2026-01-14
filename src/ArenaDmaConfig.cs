@@ -27,8 +27,8 @@ SOFTWARE.
 */
 
 using LoneArenaDmaRadar.Misc.JSON;
+using LoneArenaDmaRadar.UI;
 using LoneArenaDmaRadar.UI.ColorPicker;
-using System.Drawing;
 using VmmSharpEx.Extensions.Input;
 
 namespace LoneArenaDmaRadar
@@ -122,6 +122,7 @@ namespace LoneArenaDmaRadar
                     if (config is null)
                     {
                         var dlg = MessageBox.Show(
+                            RadarWindow.Handle,
                             "Config File Corruption Detected! If you backed up your config, you may attempt to restore it.\n" +
                             "Press OK to Reset Config and continue startup, or CANCEL to terminate program.",
                             Program.Name,
@@ -254,7 +255,7 @@ namespace LoneArenaDmaRadar
         /// Size of the Radar Window.
         /// </summary>
         [JsonPropertyName("windowSize")]
-        public Size WindowSize { get; set; } = new(1280, 720);
+        public SKSize WindowSize { get; set; } = new(1280, 720);
 
         /// <summary>
         /// Window is maximized.

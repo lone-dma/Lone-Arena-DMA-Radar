@@ -36,6 +36,7 @@ namespace LoneArenaDmaRadar
         private const string BaseName = "Lone Arena DMA Radar";
         private const string MUTEX_ID = "0f908ff7-e614-6a93-60a3-cee36c9cea91";
         private static readonly Mutex _mutex;
+        private static readonly UpdateManager _updater;
 
         /// <summary>
         /// Application Name with Version.
@@ -51,10 +52,6 @@ namespace LoneArenaDmaRadar
         /// </summary>
         public static ArenaDmaConfig Config { get; }
         /// <summary>
-        /// TRUE if the application is installed via Velopack.
-        /// </summary>
-        public static bool IsInstalled { get; }
-        /// <summary>
         /// Service Provider for Dependency Injection.
         /// NOTE: Web Radar has it's own container.
         /// </summary>
@@ -66,15 +63,20 @@ namespace LoneArenaDmaRadar
 
         static Program()
         {
-            GlfwWindowing.RegisterPlatform();
-            GlfwInput.RegisterPlatform();
-            VelopackApp.Build().Run();
             try
             {
-                IsInstalled = new UpdateManager(".").IsInstalled;
+                VelopackApp.Build().Run();
+                GlfwWindowing.RegisterPlatform();
+                GlfwInput.RegisterPlatform();
+                GlfwWindowing.Use();
                 _mutex = new Mutex(true, MUTEX_ID, out bool singleton);
                 if (!singleton)
                     throw new InvalidOperationException("The application is already running.");
+                _updater = new UpdateManager(
+                    source: new GithubSource(
+                        repoUrl: "https://github.com/lone-dma/Lone-Arena-DMA-Radar",
+                        accessToken: null,
+                        prerelease: false));
                 Config = ArenaDmaConfig.Load();
                 ServiceProvider = BuildServiceProvider();
                 HttpClientFactory = ServiceProvider.GetRequiredService<IHttpClientFactory>();
@@ -103,20 +105,16 @@ namespace LoneArenaDmaRadar
                 while (!initTask.IsCompleted)
                 {
                     loadingWindow.DoEvents();
-                    Thread.Sleep(16); // ~60fps
+                    Thread.Yield();
                 }
 
                 // Close loading window
                 loadingWindow.Close();
 
-                // Check if initialization failed
-                if (initTask.IsFaulted)
-                {
-                    throw initTask.Exception!.InnerException ?? initTask.Exception;
-                }
+                initTask.GetAwaiter().GetResult(); // Rethrow any exceptions
 
                 // Now start the radar window (this blocks until window closes)
-                RadarWindow.Initialize();
+                RadarWindow.Run();
             }
             catch (Exception ex)
             {
@@ -134,7 +132,10 @@ namespace LoneArenaDmaRadar
         {
             loadingWindow.UpdateProgress(10, "Loading, Please Wait...");
 
-            _ = Task.Run(CheckForUpdatesAsync); // Run continuations on the thread pool
+            if (_updater.IsInstalled)
+            {
+                _ = Task.Run(CheckForUpdatesAsync); // Run continuations on the thread pool
+            }
 
             var eftMapManager = EftMapManager.ModuleInitAsync();
             var memoryInterface = Memory.ModuleInitAsync();
@@ -150,7 +151,6 @@ namespace LoneArenaDmaRadar
 
             loadingWindow.UpdateProgress(100, "Loading Completed!");
         }
-
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e) => OnShutdown();
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -206,15 +206,7 @@ namespace LoneArenaDmaRadar
         {
             try
             {
-                if (!IsInstalled)
-                    return;
-                var updater = new UpdateManager(
-                    source: new GithubSource(
-                        repoUrl: "https://github.com/lone-dma/Lone-Arena-DMA-Radar",
-                        accessToken: null,
-                        prerelease: false));
-
-                var newVersion = await updater.CheckForUpdatesAsync();
+                var newVersion = await _updater.CheckForUpdatesAsync();
                 if (newVersion is not null)
                 {
                     var result = MessageBox.Show(
@@ -226,8 +218,8 @@ namespace LoneArenaDmaRadar
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        await updater.DownloadUpdatesAsync(newVersion);
-                        updater.ApplyUpdatesAndRestart(newVersion);
+                        await _updater.DownloadUpdatesAsync(newVersion);
+                        _updater.ApplyUpdatesAndRestart(newVersion);
                     }
                 }
             }
@@ -261,7 +253,6 @@ namespace LoneArenaDmaRadar
                 return "0.0.0";
             }
         }
-
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
         private static partial EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);

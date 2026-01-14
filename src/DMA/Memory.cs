@@ -28,10 +28,10 @@ SOFTWARE.
 
 global using LoneArenaDmaRadar.DMA;
 using Collections.Pooled;
-using LoneArenaDmaRadar.Arena.GameWorld;
-using LoneArenaDmaRadar.Arena.GameWorld.Explosives;
-using LoneArenaDmaRadar.Arena.GameWorld.Player;
 using LoneArenaDmaRadar.Arena.Mono;
+using LoneArenaDmaRadar.Arena.World;
+using LoneArenaDmaRadar.Arena.World.Explosives;
+using LoneArenaDmaRadar.Arena.World.Player;
 using System.Runtime;
 using VmmSharpEx;
 using VmmSharpEx.Extensions;
@@ -58,6 +58,7 @@ namespace LoneArenaDmaRadar.DMA
         public static string MapID => Game?.MapID;
         public static ulong MonoBase { get; private set; }
         public static ulong UnityBase { get; private set; }
+        public static ulong GOM { get; private set; }
         public static bool Starting { get; private set; }
         public static bool Ready { get; private set; }
         public static bool InRaid => Game?.InRaid ?? false;
@@ -65,7 +66,7 @@ namespace LoneArenaDmaRadar.DMA
         public static IReadOnlyCollection<AbstractPlayer> Players => Game?.Players;
         public static IReadOnlyCollection<IExplosiveItem> Explosives => Game?.Explosives;
         public static LocalPlayer LocalPlayer => Game?.LocalPlayer;
-        public static LocalGameWorld Game { get; private set; }
+        public static GameWorld Game { get; private set; }
 
         static Memory()
         {
@@ -254,7 +255,7 @@ namespace LoneArenaDmaRadar.DMA
                 try
                 {
                     var ct = _cts.Token;
-                    using (var game = Game = LocalGameWorld.CreateGameInstance())
+                    using (var game = Game = GameWorld.CreateGameInstance(ct))
                     {
                         OnRaidStarted();
                         game.Start();
@@ -299,7 +300,7 @@ namespace LoneArenaDmaRadar.DMA
             Starting = default;
             Ready = default;
             UnityBase = default;
-            MonoBase = default;
+            GOM = default;
             _pid = default;
         }
 

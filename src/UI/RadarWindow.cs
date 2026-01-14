@@ -27,8 +27,9 @@ SOFTWARE.
 */
 
 using ImGuiNET;
-using LoneArenaDmaRadar.Arena.GameWorld.Explosives;
-using LoneArenaDmaRadar.Arena.GameWorld.Player;
+using LoneArenaDmaRadar.Arena.World.Explosives;
+using LoneArenaDmaRadar.Arena.World.Player;
+using LoneArenaDmaRadar.Misc;
 using LoneArenaDmaRadar.UI.ColorPicker;
 using LoneArenaDmaRadar.UI.Hotkeys;
 using LoneArenaDmaRadar.UI.Hotkeys.Internal;
@@ -41,46 +42,185 @@ using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
-using Silk.NET.Windowing.Glfw;
 
 namespace LoneArenaDmaRadar.UI
 {
     internal static partial class RadarWindow
     {
-        #region Fields
+        #region Initialization
 
         private static IWindow _window = null!;
         private static GL _gl = null!;
         private static IInputContext _input = null!;
-
-        private static ImGuiController _imgui = null!;
         private static SKSurface _skSurface = null!;
         private static GRContext _grContext = null!;
         private static GRBackendRenderTarget _skBackendRenderTarget = null!;
-        private static readonly PeriodicTimer _fpsTimer = new(TimeSpan.FromSeconds(1));
-        private static int _fpsCounter = 0;
-        private static int _statusOrder = 1;
-
-        // Mouse tracking
-        private static bool _mouseDown;
-        private static Vector2 _lastMousePosition;
-        private static IMouseoverEntity _mouseOverItem;
-        private static DateTime _lastClickTime;
-        private const double DoubleClickThresholdMs = 300;
-
-        // UI State (moved from RadarUIState)
-        private static int _fps;
-        private static bool _isLootFiltersOpen;
-        private static bool _isWebRadarOpen;
-        private static bool _isMapFreeEnabled;
-        private static Vector2 _mapPanPosition;
-
-        #endregion
-
-        #region Static Properties
+        private static readonly RateLimiter _purgeRL = new(TimeSpan.FromSeconds(1));
 
         private static ArenaDmaConfig Config { get; } = Program.Config;
         public static IntPtr Handle => _window?.Native?.Win32?.Hwnd ?? IntPtr.Zero;
+
+        internal static void Run()
+        {
+            var options = WindowOptions.Default;
+            options.Size = new Vector2D<int>(
+                (int)Config.UI.WindowSize.Width,
+                (int)Config.UI.WindowSize.Height);
+            options.Title = Program.Name;
+            options.VSync = false;
+            options.FramesPerSecond = Config.UI.FPS;
+            options.PreferredStencilBufferBits = 8;
+            options.PreferredBitDepth = new Vector4D<int>(8, 8, 8, 8);
+
+            // Restore maximized state from config (not fullscreen)
+            if (Config.UI.WindowMaximized)
+            {
+                options.WindowState = WindowState.Maximized;
+            }
+
+            _window = Window.Create(options);
+
+            _window.Load += OnLoad;
+            _window.Render += OnRender;
+            _window.Resize += OnResize;
+            _window.Closing += OnClosing;
+            _window.StateChanged += OnStateChanged;
+
+            // Start FPS timer
+            _ = RunFpsTimerAsync();
+
+            _window.Run(); // Blocking call
+        }
+
+        private static void OnLoad()
+        {
+            _gl = GL.GetApi(_window);
+
+            // ApplyCustomImGuiStyle dark mode and window icon (Windows only)
+            if (_window.Native?.Win32 is { } win32)
+            {
+                EnableDarkMode(win32.Hwnd);
+                SetWindowIcon(win32.Hwnd);
+            }
+
+            // Create input context FIRST (before ImGuiController to share it)
+            _input = _window.CreateInput();
+
+            // --- Skia GPU context ---
+            var glInterface = GRGlInterface.Create(name =>
+                _window.GLContext!.TryGetProcAddress(name, out var addr) ? addr : 0);
+
+            _grContext = GRContext.CreateGl(glInterface);
+            _grContext.SetResourceCacheLimit(512 * 1024 * 1024);
+
+            CreateSkiaSurface();
+
+            // ImGuiController will setup ImGui context
+            // Use the onConfigureIO callback to configure fonts BEFORE the atlas is built
+            _imgui = new ImGuiController(
+                gl: _gl,
+                view: _window,
+                input: _input,
+                onConfigureIO: () =>
+                {
+                    ConfigureImGuiFonts(13f);
+                }
+            );
+
+            // Set IniFilename AFTER context and controller are created, then load settings
+            unsafe
+            {
+                string path = Path.Combine(Program.ConfigPath.FullName, "imgui.ini");
+                ImGuiNET.ImGuiNative.igGetIO()->IniFilename = (byte*)Marshal.StringToHGlobalAnsi(path);
+
+                // Explicitly load the ini file if it exists
+                if (File.Exists(path))
+                {
+                    ImGui.LoadIniSettingsFromDisk(path);
+                }
+            }
+
+            ApplyCustomImGuiStyle();
+
+            // Setup mouse events on the shared input context
+            foreach (var mouse in _input.Mice)
+            {
+                mouse.MouseDown += OnMouseDown;
+                mouse.MouseUp += OnMouseUp;
+                mouse.MouseMove += OnMouseMove;
+                mouse.Scroll += OnMouseScroll;
+            }
+
+            // Setup local keyboard hotkeys
+            foreach (var keyboard in _input.Keyboards)
+            {
+                keyboard.KeyDown += OnKeyDown;
+            }
+
+            // Register hotkey action controllers (for remote DMA hotkeys)
+            RegisterHotkeyControllers();
+
+            // Initialize UI panels
+            ColorPickerPanel.Initialize();
+            SettingsPanel.Initialize();
+
+            // Initialize widgets
+            AimviewWidget.Initialize(_gl, _grContext);
+        }
+
+        private static void CreateSkiaSurface()
+        {
+            _skSurface?.Dispose();
+            _skSurface = null;
+            _skBackendRenderTarget?.Dispose();
+            _skBackendRenderTarget = null;
+
+            var size = _window.FramebufferSize;
+            if (size.X <= 0 || size.Y <= 0 || _grContext is null)
+            {
+                _skSurface = null!;
+                _skBackendRenderTarget = null!;
+                return;
+            }
+
+            _gl.GetInteger(GetPName.SampleBuffers, out int sampleBuffers);
+            _gl.GetInteger(GetPName.Samples, out int samples);
+            if (sampleBuffers == 0)
+                samples = 0;
+            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0); // bind default framebuffer
+            _gl.GetFramebufferAttachmentParameter(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.StencilAttachment,
+                FramebufferAttachmentParameterName.StencilSize,
+                out int stencilBits
+            );
+
+            var fbInfo = new GRGlFramebufferInfo(
+                0, // default framebuffer
+                (uint)InternalFormat.Rgba8
+            );
+
+            _skBackendRenderTarget = new GRBackendRenderTarget(
+                size.X,
+                size.Y,
+                samples,
+                stencilBits,
+                fbInfo
+            );
+
+            _skSurface = SKSurface.Create(
+                _grContext,
+                _skBackendRenderTarget,
+                GRSurfaceOrigin.BottomLeft,
+                SKColorType.Rgba8888
+            );
+        }
+
+
+        #endregion
+
+        #region Radar Operation
+
         private static bool Starting => Memory.Starting;
         private static bool Ready => Memory.Ready;
         private static bool InRaid => Memory.InRaid;
@@ -106,204 +246,6 @@ namespace LoneArenaDmaRadar.UI
             get => _mapPanPosition;
             set => _mapPanPosition = value;
         }
-
-        #endregion
-
-        #region Initialization
-
-        internal static void Initialize()
-        {
-            var options = WindowOptions.Default;
-            options.Size = new Vector2D<int>(
-                (int)Config.UI.WindowSize.Width,
-                (int)Config.UI.WindowSize.Height);
-            options.Title = Program.Name;
-            options.VSync = false;
-            options.FramesPerSecond = Config.UI.FPS;
-            options.PreferredStencilBufferBits = 8;
-            options.PreferredBitDepth = new Vector4D<int>(8, 8, 8, 8);
-
-            // Restore maximized state from config (not fullscreen)
-            if (Config.UI.WindowMaximized)
-            {
-                options.WindowState = WindowState.Maximized;
-            }
-
-            GlfwWindowing.Use();
-            _window = Window.Create(options);
-
-            _window.Load += OnLoad;
-            _window.Render += OnRender;
-            _window.Resize += OnResize;
-            _window.Closing += OnClosing;
-            _window.StateChanged += OnStateChanged;
-
-            // Start FPS timer
-            _ = RunFpsTimerAsync();
-
-            _window.Run();
-        }
-
-        private static void OnLoad()
-        {
-            _gl = GL.GetApi(_window);
-
-            // Apply dark mode and window icon (Windows only)
-            if (_window.Native?.Win32 is { } win32)
-            {
-                EnableDarkMode(win32.Hwnd);
-                SetWindowIcon(win32.Hwnd);
-            }
-
-            // Create input context FIRST (before ImGuiController to share it)
-            _input = _window.CreateInput();
-
-            // --- Skia GPU context ---
-            var glInterface = GRGlInterface.Create(name =>
-                _window.GLContext!.TryGetProcAddress(name, out var addr) ? addr : 0);
-
-            _grContext = GRContext.CreateGl(glInterface);
-            _grContext.SetResourceCacheLimit(512 * 1024 * 1024); // 512 MB
-
-            CreateSkiaSurface();
-
-            // --- ImGui ---
-            ImGui.CreateContext();
-
-            // Pass the existing input context to ImGuiController to share it
-            _imgui = new ImGuiController(
-                gl: _gl,
-                view: _window,
-                input: _input  // Share the input context
-            );
-
-            // Set IniFilename AFTER context and controller are created, then load settings
-            unsafe
-            {
-                string path = Path.Combine(Program.ConfigPath.FullName, "imgui.ini");
-                ImGuiNET.ImGuiNative.igGetIO()->IniFilename = (byte*)Marshal.StringToHGlobalAnsi(path);
-
-                // Explicitly load the ini file if it exists
-                if (File.Exists(path))
-                {
-                    ImGui.LoadIniSettingsFromDisk(path);
-                }
-            }
-
-            // Configure style AFTER ImGuiController is fully initialized
-            // to prevent flicker from font texture recreation
-            ImGui.StyleColorsDark();
-
-            // Setup mouse events on the shared input context
-            foreach (var mouse in _input.Mice)
-            {
-                mouse.MouseDown += OnMouseDown;
-                mouse.MouseUp += OnMouseUp;
-                mouse.MouseMove += OnMouseMove;
-                mouse.Scroll += OnMouseScroll;
-            }
-
-            // Setup local keyboard hotkeys
-            foreach (var keyboard in _input.Keyboards)
-            {
-                keyboard.KeyDown += OnKeyDown;
-            }
-
-            // Register hotkey action controllers (for remote DMA hotkeys)
-            RegisterHotkeyControllers();
-
-            // Initialize UI panels
-            ColorPickerPanel.Initialize();
-            SettingsPanel.Initialize();
-
-            // Initialize widgets
-            InitializeWidgets();
-        }
-
-        private static void InitializeWidgets()
-        {
-            AimviewWidget.Initialize(_gl, _grContext);
-        }
-
-        private static void CreateSkiaSurface()
-        {
-            _skSurface?.Dispose();
-            _skSurface = null;
-            _skBackendRenderTarget?.Dispose();
-            _skBackendRenderTarget = null;
-
-            var size = _window.FramebufferSize;
-            if (size.X <= 0 || size.Y <= 0 || _grContext is null)
-            {
-                _skSurface = null!;
-                _skBackendRenderTarget = null!;
-                return;
-            }
-
-            const GetPName SampleBuffersPName = (GetPName)0x80A8; // GL_SAMPLE_BUFFERS
-            const GetPName SamplesPName = (GetPName)0x80A9;       // GL_SAMPLES
-            const GetPName StencilBitsPName = (GetPName)0x0D57;   // GL_STENCIL_BITS
-
-            _gl.GetInteger(SampleBuffersPName, out int sampleBuffers);
-            _gl.GetInteger(SamplesPName, out int samples);
-            if (sampleBuffers == 0)
-                samples = 0;
-            _gl.GetInteger(StencilBitsPName, out int stencilBits);
-
-            var fbInfo = new GRGlFramebufferInfo(
-                0, // default framebuffer
-                (uint)InternalFormat.Rgba8
-            );
-
-            _skBackendRenderTarget = new GRBackendRenderTarget(
-                size.X,
-                size.Y,
-                samples,
-                stencilBits,
-                fbInfo
-            );
-
-            _skSurface = SKSurface.Create(
-                _grContext,
-                _skBackendRenderTarget,
-                GRSurfaceOrigin.BottomLeft,
-                SKColorType.Rgba8888
-            );
-        }
-
-        private static void OnResize(Vector2D<int> size)
-        {
-            _gl.Viewport(size);
-            CreateSkiaSurface();
-        }
-
-        private static void OnStateChanged(WindowState state)
-        {
-            // Track maximized state for persistence
-            // Note: Fullscreen (hidden border + maximized) is NOT persisted - only regular maximized
-            if (_window.WindowBorder == WindowBorder.Resizable)
-            {
-                Config.UI.WindowMaximized = (state == WindowState.Maximized);
-            }
-        }
-
-        private static void OnClosing()
-        {
-            // Save window state - only save size if not maximized/fullscreen
-            if (_window.WindowState == WindowState.Normal)
-            {
-                Config.UI.WindowSize = new System.Drawing.Size(_window.Size.X, _window.Size.Y);
-            }
-
-            Config.UI.WindowMaximized = _window.WindowState == WindowState.Maximized;
-            // CurrentDomain_ProcessExit will execute after this point
-        }
-
-        #endregion
-
-        #region Render Loop
-
-        private static readonly RateLimiter _purgeRL = new(TimeSpan.FromSeconds(1));
 
         /// <summary>
         /// Main Render Loop.
@@ -373,46 +315,6 @@ namespace LoneArenaDmaRadar.UI
             }
         }
 
-        private static void DrawImGuiUI(ref Vector2D<int> fbSize, double delta)
-        {
-            _gl.Viewport(0, 0, (uint)fbSize.X, (uint)fbSize.Y);
-            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-            _imgui.Update((float)delta);
-            try
-            {
-                // Draw overlay controls
-                RadarOverlayPanel.DrawTopBar();
-                RadarOverlayPanel.DrawMapSetupHelper();
-
-                // Draw main menu bar
-                if (ImGui.BeginMainMenuBar())
-                {
-                    if (ImGui.MenuItem("Settings", null, SettingsPanel.IsOpen))
-                    {
-                        SettingsPanel.IsOpen = !SettingsPanel.IsOpen;
-                    }
-
-                    ImGui.Separator();
-
-                    // Display current map and FPS on the right
-                    string mapName = EftMapManager.Map?.Config?.Name ?? "No Map";
-                    string rightText = $"{mapName} | {_fps} FPS";
-                    float rightTextWidth = ImGui.CalcTextSize(rightText).X;
-                    ImGui.SetCursorPosX(ImGui.GetWindowWidth() - rightTextWidth - 10);
-                    ImGui.Text(rightText);
-
-                    ImGui.EndMainMenuBar();
-                }
-
-                // Draw windows
-                DrawWindows();
-            }
-            finally
-            {
-                _imgui.Render();
-            }
-        }
-
         private static void DrawInRaidRadar(SKCanvas canvas, LocalPlayer localPlayer, IEftMap map)
         {
             var closestToMouse = _mouseOverItem;
@@ -450,7 +352,6 @@ namespace LoneArenaDmaRadar.UI
             // Draw Map
             map.Draw(canvas, localPlayer.Position.Y, mapParams.Bounds, mapCanvasBounds);
 
-
             // Draw explosives
             if (Explosives is IReadOnlyCollection<IExplosiveItem> explosives)
             {
@@ -459,7 +360,6 @@ namespace LoneArenaDmaRadar.UI
                     explosive.Draw(canvas, mapParams, localPlayer);
                 }
             }
-
 
             // Draw players
             var allPlayers = AllPlayers?.Where(x => !x.HasExfild);
@@ -535,34 +435,63 @@ namespace LoneArenaDmaRadar.UI
             }
         }
 
-        private static void DrawImGuiUI()
+        private static IEnumerable<IMouseoverEntity> GetMouseoverItems()
         {
-            // Draw overlay controls
-            RadarOverlayPanel.DrawTopBar();
-            RadarOverlayPanel.DrawMapSetupHelper();
+            var players = AllPlayers?
+                .Where(x => x is not LoneArenaDmaRadar.Arena.World.Player.LocalPlayer && !x.HasExfild) ??
+                Enumerable.Empty<AbstractPlayer>();
 
-            // Draw main menu bar
-            if (ImGui.BeginMainMenuBar())
+            using var enumerator = players.GetEnumerator();
+            if (!enumerator.MoveNext())
+                return null;
+
+            return players;
+        }
+
+        #endregion
+
+        #region ImGui Menus
+
+        private static ImGuiController _imgui = null!;
+
+        private static void DrawImGuiUI(ref Vector2D<int> fbSize, double delta)
+        {
+            _gl.Viewport(0, 0, (uint)fbSize.X, (uint)fbSize.Y);
+            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            _imgui.Update((float)delta);
+            try
             {
-                if (ImGui.MenuItem("Settings", null, SettingsPanel.IsOpen))
+                // Draw overlay controls
+                RadarMenuPanel.Draw();
+                MapSetupHelperPanel.DrawOverlay();
+
+                // Draw main menu bar
+                if (ImGui.BeginMainMenuBar())
                 {
-                    SettingsPanel.IsOpen = !SettingsPanel.IsOpen;
+                    if (ImGui.MenuItem("Settings", null, SettingsPanel.IsOpen))
+                    {
+                        SettingsPanel.IsOpen = !SettingsPanel.IsOpen;
+                    }
+
+                    ImGui.Separator();
+
+                    // Display current map and FPS on the right
+                    string mapName = EftMapManager.Map?.Config?.Name ?? "No Map";
+                    string rightText = $"{mapName} | {_fps} FPS";
+                    float rightTextWidth = ImGui.CalcTextSize(rightText).X;
+                    ImGui.SetCursorPosX(ImGui.GetWindowWidth() - rightTextWidth - 10);
+                    ImGui.Text(rightText);
+
+                    ImGui.EndMainMenuBar();
                 }
 
-                ImGui.Separator();
-
-                // Display current map and FPS on the right
-                string mapName = EftMapManager.Map?.Config?.Name ?? "No Map";
-                string rightText = $"{mapName} | {_fps} FPS";
-                float rightTextWidth = ImGui.CalcTextSize(rightText).X;
-                ImGui.SetCursorPosX(ImGui.GetWindowWidth() - rightTextWidth - 10);
-                ImGui.Text(rightText);
-
-                ImGui.EndMainMenuBar();
+                // Draw windows
+                DrawWindows();
             }
-
-            // Draw windows
-            DrawWindows();
+            finally
+            {
+                _imgui.Render();
+            }
         }
 
         private static void DrawWindows()
@@ -600,7 +529,47 @@ namespace LoneArenaDmaRadar.UI
 
         #endregion
 
-        #region Input Handling
+        #region UI State and Events
+
+        private static readonly PeriodicTimer _fpsTimer = new(TimeSpan.FromSeconds(1));
+        private static int _fpsCounter = 0;
+        private static int _statusOrder = 1;
+        private static bool _mouseDown;
+        private static Vector2 _lastMousePosition;
+        private static IMouseoverEntity _mouseOverItem;
+        private static DateTime _lastClickTime;
+        private const double DoubleClickThresholdMs = 300;
+        private static int _fps;
+        private static bool _isMapFreeEnabled;
+        private static Vector2 _mapPanPosition;
+
+        private static void OnResize(Vector2D<int> size)
+        {
+            _gl.Viewport(size);
+            CreateSkiaSurface();
+        }
+
+        private static void OnStateChanged(WindowState state)
+        {
+            // Track maximized state for persistence
+            // Note: Fullscreen (hidden border + maximized) is NOT persisted - only regular maximized
+            if (_window.WindowBorder == WindowBorder.Resizable)
+            {
+                Config.UI.WindowMaximized = (state == WindowState.Maximized);
+            }
+        }
+
+        private static void OnClosing()
+        {
+            // Save window state - only save size if not maximized/fullscreen
+            if (_window.WindowState == WindowState.Normal)
+            {
+                Config.UI.WindowSize = new SKSize(_window.Size.X, _window.Size.Y);
+            }
+
+            Config.UI.WindowMaximized = _window.WindowState == WindowState.Maximized;
+            // CurrentDomain_ProcessExit will execute after this point
+        }
 
         private static void OnMouseDown(IMouse mouse, MouseButton button)
         {
@@ -728,29 +697,25 @@ namespace LoneArenaDmaRadar.UI
                     ClearMouseoverRefs();
                     break;
             }
+
+            static void ClearMouseoverRefs()
+            {
+                _mouseOverItem = null;
+            }
         }
 
-        private static void ClearMouseoverRefs()
+        private static async Task RunFpsTimerAsync()
         {
-            _mouseOverItem = null;
-        }
-
-        private static IEnumerable<IMouseoverEntity> GetMouseoverItems()
-        {
-            var players = AllPlayers?
-                .Where(x => x is not LoneArenaDmaRadar.Arena.GameWorld.Player.LocalPlayer && !x.HasExfild && (!Config.UI.HighAlert || x.IsAlive)) ??
-                Enumerable.Empty<AbstractPlayer>();
-
-            using var enumerator = players.GetEnumerator();
-            if (!enumerator.MoveNext())
-                return null;
-
-            return players;
+            while (await _fpsTimer.WaitForNextTickAsync()) // 1 Second Interval
+            {
+                _statusOrder = (_statusOrder >= 3) ? 1 : _statusOrder + 1;
+                _fps = Interlocked.Exchange(ref _fpsCounter, 0);
+            }
         }
 
         #endregion
 
-        #region Helpers
+        #region Hotkeys
 
         private const int HK_ZOOMTICKAMT = 5;
         private const int HK_ZOOMTICKDELAY = 120;
@@ -838,18 +803,9 @@ namespace LoneArenaDmaRadar.UI
             Config.UI.Zoom = Math.Min(200, Config.UI.Zoom + amt);
         }
 
-        private static async Task RunFpsTimerAsync()
-        {
-            while (await _fpsTimer.WaitForNextTickAsync()) // 1 Second Interval
-            {
-                _statusOrder = (_statusOrder >= 3) ? 1 : _statusOrder + 1;
-                _fps = Interlocked.Exchange(ref _fpsCounter, 0);
-            }
-        }
-
         #endregion
 
-        #region Win32 Interop
+        #region Fonts & Styling
 
         private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
 
@@ -903,6 +859,172 @@ namespace LoneArenaDmaRadar.UI
                 SendMessageW(hwnd, WM_SETICON, ICON_BIG, hIconBig);
         }
 
+
+        /// <summary>
+        /// Configures custom fonts. Must be called before font atlas is built.
+        /// </summary>
+        private static unsafe void ConfigureImGuiFonts(float basePixelSize)
+        {
+            var io = ImGui.GetIO();
+            var fontBytes = LoadEmbeddedFontBytes();
+
+            if (fontBytes is null || fontBytes.Length == 0)
+                return; // Fall back to default font
+
+            io.Fonts.Clear();
+
+            var cfg = new ImFontConfigPtr(ImGuiNET.ImGuiNative.ImFontConfig_ImFontConfig());
+            cfg.OversampleH = 3;
+            cfg.OversampleV = 2;
+            cfg.PixelSnapH = true;
+
+            fixed (byte* pFont = fontBytes)
+            {
+                io.Fonts.AddFontFromMemoryTTF((nint)pFont, fontBytes.Length, basePixelSize, cfg);
+            }
+
+            cfg.Destroy();
+
+            static byte[] LoadEmbeddedFontBytes()
+            {
+                try
+                {
+                    using var stream = Utilities.OpenResource("LoneArenaDmaRadar.Resources.NeoSansStdRegular.otf");
+                    if (stream is null)
+                        return null;
+
+                    var bytes = new byte[stream.Length];
+                    stream.ReadExactly(bytes);
+                    return bytes;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Applies a custom ImGui style/theme.
+        /// </summary>
+        private static void ApplyCustomImGuiStyle()
+        {
+            ImGui.StyleColorsDark();
+
+            var style = ImGui.GetStyle();
+
+            // HUD / Radar style: rounded, calm contrast, minimal borders
+            style.WindowRounding = 10f;
+            style.ChildRounding = 10f;
+            style.PopupRounding = 10f;
+            style.FrameRounding = 8f;
+            style.ScrollbarRounding = 12f;
+            style.GrabRounding = 10f;
+            style.TabRounding = 10f;
+
+            // Comfortable spacing for menus, not too chunky
+            style.WindowPadding = new Vector2(12, 10);
+            style.FramePadding = new Vector2(8, 5);
+            style.ItemSpacing = new Vector2(8, 6);
+            style.ItemInnerSpacing = new Vector2(6, 4);
+            style.ScrollbarSize = 14f;
+            style.GrabMinSize = 12f;
+
+            // Subtle borders (avoid boxy look)
+            style.WindowBorderSize = 0.0f;
+            style.ChildBorderSize = 0.0f;
+            style.PopupBorderSize = 1.0f;
+            style.FrameBorderSize = 0.0f;
+
+            style.WindowTitleAlign = new Vector2(0.5f, 0.5f);
+            style.ButtonTextAlign = new Vector2(0.5f, 0.5f);
+            style.WindowMenuButtonPosition = ImGuiDir.None;
+
+            // Slight translucency helps the map feel like the primary layer
+            style.Alpha = 0.96f;
+
+            var colors = style.Colors;
+
+            // Dark HUD palette (blue/gray) + teal accent
+            Vector4 bg = new(0.06f, 0.07f, 0.09f, 1.00f);
+            Vector4 bg2 = new(0.09f, 0.10f, 0.12f, 1.00f);
+            Vector4 frame = new(0.12f, 0.13f, 0.16f, 1.00f);
+            Vector4 frameHover = new(0.16f, 0.17f, 0.21f, 1.00f);
+            Vector4 frameActive = new(0.18f, 0.20f, 0.24f, 1.00f);
+
+            Vector4 text = new(0.95f, 0.96f, 0.98f, 1.00f);
+            Vector4 textDisabled = new(0.55f, 0.58f, 0.62f, 1.00f);
+
+            Vector4 border = new(0.20f, 0.22f, 0.27f, 0.85f);
+
+            Vector4 accent = new(0.12f, 0.78f, 0.71f, 1.00f);
+            Vector4 accentHover = new(0.18f, 0.86f, 0.78f, 1.00f);
+            Vector4 accentActive = new(0.10f, 0.66f, 0.60f, 1.00f);
+
+            // Text
+            colors[(int)ImGuiCol.Text] = text;
+            colors[(int)ImGuiCol.TextDisabled] = textDisabled;
+
+            // Windows
+            colors[(int)ImGuiCol.WindowBg] = new Vector4(bg.X, bg.Y, bg.Z, 0.92f);
+            colors[(int)ImGuiCol.ChildBg] = new Vector4(0f, 0f, 0f, 0f);
+            colors[(int)ImGuiCol.PopupBg] = new Vector4(bg2.X, bg2.Y, bg2.Z, 0.98f);
+
+            // Borders
+            colors[(int)ImGuiCol.Border] = border;
+            colors[(int)ImGuiCol.BorderShadow] = new Vector4(0f, 0f, 0f, 0f);
+
+            // Frames / Inputs
+            colors[(int)ImGuiCol.FrameBg] = new Vector4(frame.X, frame.Y, frame.Z, 0.95f);
+            colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(frameHover.X, frameHover.Y, frameHover.Z, 0.95f);
+            colors[(int)ImGuiCol.FrameBgActive] = new Vector4(frameActive.X, frameActive.Y, frameActive.Z, 1.00f);
+
+            // Titles / Menu bar
+            colors[(int)ImGuiCol.TitleBg] = new Vector4(bg2.X, bg2.Y, bg2.Z, 0.95f);
+            colors[(int)ImGuiCol.TitleBgActive] = new Vector4(bg2.X, bg2.Y, bg2.Z, 0.98f);
+            colors[(int)ImGuiCol.TitleBgCollapsed] = new Vector4(bg2.X, bg2.Y, bg2.Z, 0.75f);
+            colors[(int)ImGuiCol.MenuBarBg] = new Vector4(bg2.X, bg2.Y, bg2.Z, 0.92f);
+
+            // Scrollbar
+            colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(bg.X, bg.Y, bg.Z, 0.70f);
+            colors[(int)ImGuiCol.ScrollbarGrab] = new Vector4(0.30f, 0.33f, 0.40f, 0.70f);
+            colors[(int)ImGuiCol.ScrollbarGrabHovered] = new Vector4(0.38f, 0.42f, 0.50f, 0.80f);
+            colors[(int)ImGuiCol.ScrollbarGrabActive] = new Vector4(0.45f, 0.50f, 0.60f, 0.90f);
+
+            // Check / Slider
+            colors[(int)ImGuiCol.CheckMark] = accent;
+            colors[(int)ImGuiCol.SliderGrab] = new Vector4(accent.X, accent.Y, accent.Z, 0.75f);
+            colors[(int)ImGuiCol.SliderGrabActive] = accentActive;
+
+            // Buttons (teal only on interaction)
+            colors[(int)ImGuiCol.Button] = new Vector4(frame.X, frame.Y, frame.Z, 0.75f);
+            colors[(int)ImGuiCol.ButtonHovered] = new Vector4(accent.X, accent.Y, accent.Z, 0.35f);
+            colors[(int)ImGuiCol.ButtonActive] = new Vector4(accent.X, accent.Y, accent.Z, 0.55f);
+
+            // Headers (tree nodes, selectable, etc.)
+            colors[(int)ImGuiCol.Header] = new Vector4(frame.X, frame.Y, frame.Z, 0.55f);
+            colors[(int)ImGuiCol.HeaderHovered] = new Vector4(accent.X, accent.Y, accent.Z, 0.30f);
+            colors[(int)ImGuiCol.HeaderActive] = new Vector4(accent.X, accent.Y, accent.Z, 0.45f);
+
+            // Separators
+            colors[(int)ImGuiCol.Separator] = new Vector4(border.X, border.Y, border.Z, 0.60f);
+            colors[(int)ImGuiCol.SeparatorHovered] = new Vector4(accentHover.X, accentHover.Y, accentHover.Z, 0.70f);
+            colors[(int)ImGuiCol.SeparatorActive] = accent;
+
+            // Resize grip (keep subtle)
+            colors[(int)ImGuiCol.ResizeGrip] = new Vector4(accent.X, accent.Y, accent.Z, 0.12f);
+            colors[(int)ImGuiCol.ResizeGripHovered] = new Vector4(accentHover.X, accentHover.Y, accentHover.Z, 0.30f);
+            colors[(int)ImGuiCol.ResizeGripActive] = new Vector4(accentActive.X, accentActive.Y, accentActive.Z, 0.45f);
+
+            // Tabs (if supported by your ImGui.NET version)
+            colors[(int)ImGuiCol.Tab] = new Vector4(frame.X, frame.Y, frame.Z, 0.60f);
+            colors[(int)ImGuiCol.TabHovered] = new Vector4(accent.X, accent.Y, accent.Z, 0.25f);
+
+            // Selection
+            colors[(int)ImGuiCol.TextSelectedBg] = new Vector4(accent.X, accent.Y, accent.Z, 0.35f);
+            colors[(int)ImGuiCol.DragDropTarget] = new Vector4(accentHover.X, accentHover.Y, accentHover.Z, 0.90f);
+            colors[(int)ImGuiCol.ModalWindowDimBg] = new Vector4(0f, 0f, 0f, 0.65f);
+        }
         #endregion
 
     }
