@@ -300,6 +300,7 @@ namespace LoneArenaDmaRadar.DMA
             Starting = default;
             Ready = default;
             UnityBase = default;
+            MonoBase = default;
             GOM = default;
             _pid = default;
         }
