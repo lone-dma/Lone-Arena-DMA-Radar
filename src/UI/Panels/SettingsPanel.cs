@@ -54,15 +54,6 @@ namespace LoneArenaDmaRadar.UI.Panels
         }
 
         /// <summary>
-        /// Initialize the settings panel.
-        /// </summary>
-        public static void Initialize()
-        {
-            // Apply UI scale from config at startup
-            UpdateScaleValues(Config.UI.UIScale);
-        }
-
-        /// <summary>
         /// Draw the settings panel.
         /// </summary>
         public static void Draw()
@@ -144,7 +135,7 @@ namespace LoneArenaDmaRadar.UI.Panels
                 if (ImGui.SliderFloat("UI Scale", ref uiScale, 0.5f, 2.0f, "%.1f"))
                 {
                     Config.UI.UIScale = uiScale;
-                    UpdateScaleValues(uiScale);
+                    UpdateUIScale(uiScale);
                 }
                 if (ImGui.IsItemHovered())
                     ImGui.SetTooltip("Scale UI elements (text, icons, widgets)");
@@ -241,7 +232,7 @@ namespace LoneArenaDmaRadar.UI.Panels
             }
         }
 
-        private static void UpdateScaleValues(float newScale)
+        public static void UpdateUIScale(float newScale)
         {
             // Update Paints
             SKPaints.TextOutline.StrokeWidth = 2f * newScale;

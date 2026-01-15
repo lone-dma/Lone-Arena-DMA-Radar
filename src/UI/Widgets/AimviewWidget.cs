@@ -77,7 +77,6 @@ namespace LoneArenaDmaRadar.UI.Widgets
         // Data sources
         private static LocalPlayer LocalPlayer => Memory.LocalPlayer;
         private static IReadOnlyCollection<AbstractPlayer> AllPlayers => Memory.Players;
-        private static bool InRaid => Memory.InRaid;
 
         public static void Initialize(GL gl, GRContext grContext)
         {
@@ -109,7 +108,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
 
             try
             {
-                if (InRaid && LocalPlayer is LocalPlayer localPlayer)
+                if (Program.State == AppState.InRaid && LocalPlayer is LocalPlayer localPlayer)
                 {
                     // Update camera matrix
                     UpdateMatrix(localPlayer);

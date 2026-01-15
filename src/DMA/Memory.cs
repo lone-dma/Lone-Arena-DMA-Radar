@@ -28,7 +28,6 @@ SOFTWARE.
 
 global using LoneArenaDmaRadar.DMA;
 using Collections.Pooled;
-using LoneArenaDmaRadar.UI;
 using LoneArenaDmaRadar.Arena.Mono;
 using LoneArenaDmaRadar.Arena.World;
 using LoneArenaDmaRadar.Arena.World.Explosives;
@@ -60,9 +59,6 @@ namespace LoneArenaDmaRadar.DMA
         public static ulong MonoBase { get; private set; }
         public static ulong UnityBase { get; private set; }
         public static ulong GOM { get; private set; }
-        public static bool Starting { get; private set; }
-        public static bool Ready { get; private set; }
-        public static bool InRaid => Game?.InRaid ?? false;
 
         public static IReadOnlyCollection<AbstractPlayer> Players => Game?.Players;
         public static IReadOnlyCollection<IExplosiveItem> Explosives => Game?.Explosives;
@@ -171,7 +167,7 @@ namespace LoneArenaDmaRadar.DMA
         private static void MemoryPrimaryWorker()
         {
             Logging.WriteLine("Memory thread starting...");
-            while (RadarWindow.Dispatcher is null)
+            while (Program.State == AppState.Initializing)
                 Thread.Sleep(1);
             while (true)
             {
@@ -232,9 +228,7 @@ namespace LoneArenaDmaRadar.DMA
                     _vmm.ForceFullRefresh();
                     LoadProcess();
                     LoadModules();
-                    Starting = true;
                     OnProcessStarting();
-                    Ready = true;
                     Logging.WriteLine("Process Startup [OK]");
                     break;
                 }
@@ -300,8 +294,6 @@ namespace LoneArenaDmaRadar.DMA
         /// <param name="e"></param>
         private static void MemDMA_ProcessStopped(object sender, EventArgs e)
         {
-            Starting = default;
-            Ready = default;
             UnityBase = default;
             MonoBase = default;
             GOM = default;
@@ -378,6 +370,7 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         private static void OnProcessStarting()
         {
+            Program.UpdateState(AppState.ProcessStarting);
             ProcessStarting?.Invoke(null, EventArgs.Empty);
         }
 
@@ -386,6 +379,7 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         private static void OnProcessStarted()
         {
+            Program.UpdateState(AppState.WaitingForRaid);
             ProcessStarted?.Invoke(null, EventArgs.Empty);
         }
 
@@ -394,6 +388,7 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         private static void OnProcessStopped()
         {
+            Program.UpdateState(AppState.ProcessNotStarted);
             ProcessStopped?.Invoke(null, EventArgs.Empty);
         }
 
@@ -402,6 +397,7 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         private static void OnRaidStarted()
         {
+            Program.UpdateState(AppState.InRaid);
             RaidStarted?.Invoke(null, EventArgs.Empty);
         }
 
@@ -410,6 +406,7 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         private static void OnRaidStopped()
         {
+            Program.UpdateState(AppState.WaitingForRaid);
             RaidStopped?.Invoke(null, EventArgs.Empty);
         }
 
