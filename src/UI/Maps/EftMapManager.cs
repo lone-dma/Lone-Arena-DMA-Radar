@@ -97,7 +97,7 @@ namespace LoneArenaDmaRadar.UI.Maps
                 if (Map?.ID?.Equals(mapId, StringComparison.OrdinalIgnoreCase) ?? false)
                     return Map;
                 if (!_maps.TryGetValue(mapId, out var newMap))
-                    throw new KeyNotFoundException($"Map ID '{mapId}' not found!");
+                    newMap = _maps["default"]; // Fallback to default map
                 Map?.Dispose();
                 Map = null;
                 Map = new EftSvgMap(mapId, newMap);
