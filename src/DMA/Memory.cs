@@ -28,6 +28,7 @@ SOFTWARE.
 
 global using LoneArenaDmaRadar.DMA;
 using Collections.Pooled;
+using LoneArenaDmaRadar.UI;
 using LoneArenaDmaRadar.Arena.Mono;
 using LoneArenaDmaRadar.Arena.World;
 using LoneArenaDmaRadar.Arena.World.Explosives;
@@ -170,6 +171,8 @@ namespace LoneArenaDmaRadar.DMA
         private static void MemoryPrimaryWorker()
         {
             Logging.WriteLine("Memory thread starting...");
+            while (RadarWindow.Dispatcher is null)
+                Thread.Sleep(1);
             while (true)
             {
                 try
