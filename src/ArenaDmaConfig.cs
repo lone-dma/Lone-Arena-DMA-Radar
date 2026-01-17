@@ -178,15 +178,9 @@ namespace LoneArenaDmaRadar
             }
         }
 
-        /// <summary>
-        /// Saves the current configuration to disk asynchronously.
-        /// </summary>
-        /// <returns></returns>
-        public async Task SaveAsync() => await Task.Run(Save);
-
         private static void SaveInternal(ArenaDmaConfig config)
         {
-            var json = JsonSerializer.Serialize(config, AppJsonContext.Default.ArenaDmaConfig);
+            var json = JsonSerializer.Serialize(config, AppConfigJsonContext.Default.ArenaDmaConfig);
             using (var fs = new FileStream(
                 _tempFile.FullName,
                 FileMode.Create,
