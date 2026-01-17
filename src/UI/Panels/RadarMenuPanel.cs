@@ -43,9 +43,9 @@ namespace LoneArenaDmaRadar.UI.Panels
         public static void Draw()
         {
             // Static position in top-left, below menu bar.
-            // Use the menu bar height so this doesn't overlap at high UI scale.
-            float y = ImGui.GetFrameHeight() + ImGui.GetStyle().FramePadding.Y;
-            ImGui.SetNextWindowPos(new Vector2(10, y), ImGuiCond.Always);
+            // Use ImGui's current frame height so this stays correct when UI scale changes.
+            float topOffset = ImGui.GetFrameHeightWithSpacing();
+            ImGui.SetNextWindowPos(new Vector2(10, topOffset), ImGuiCond.Always);
             ImGui.SetNextWindowBgAlpha(0.7f);
 
             var flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize |
