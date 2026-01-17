@@ -108,9 +108,10 @@ namespace LoneArenaDmaRadar.UI.Widgets
 
             try
             {
-                float uiScale = Program.Config.UI.UIScale;
+                // Apply global UI scale
+                float scale = Program.Config.UI.RadarScale;
                 canvas.Save();
-                canvas.Scale(uiScale, uiScale);
+                canvas.Scale(scale, scale);
 
                 if (Program.State == AppState.InRaid && LocalPlayer is LocalPlayer localPlayer)
                 {
@@ -118,10 +119,10 @@ namespace LoneArenaDmaRadar.UI.Widgets
                     UpdateMatrix(localPlayer);
 
                     // Draw players
-                    DrawPlayers(canvas, localPlayer, width / uiScale, height / uiScale);
+                    DrawPlayers(canvas, localPlayer, width / scale, height / scale);
 
                     // Draw crosshair
-                    DrawCrosshair(canvas, width / uiScale, height / uiScale);
+                    DrawCrosshair(canvas, width / scale, height / scale);
                 }
             }
             catch (Exception ex)

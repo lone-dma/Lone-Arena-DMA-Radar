@@ -61,7 +61,7 @@ namespace LoneArenaDmaRadar.UI
         private static ArenaDmaConfig Config { get; } = Program.Config;
         public static IntPtr Handle => _window?.Native?.Win32?.Hwnd ?? IntPtr.Zero;
 
-        private static float UIScale => Math.Clamp(Config.UI.UIScale, 0.5f, 2.0f);
+        private static float RadarScale => Config.UI.RadarScale;
 
         internal static void Initialize()
         {
@@ -337,7 +337,7 @@ namespace LoneArenaDmaRadar.UI
             {
                 // Global UI scaling: scale the entire Skia canvas once per frame.
                 // Drawing code should use constant sizes; input coordinates must be adjusted separately.
-                float uiScale = UIScale;
+                float uiScale = RadarScale;
                 canvas.Save();
                 canvas.Scale(uiScale, uiScale);
 
@@ -373,7 +373,7 @@ namespace LoneArenaDmaRadar.UI
             // Get map parameters
             EftMapParams mapParams;
             // Canvas is globally scaled, so provide pre-scaled logical size to map/layout.
-            float uiScale = UIScale;
+            float uiScale = RadarScale;
             var canvasSize = new SKSize(_window.Size.X / uiScale, _window.Size.Y / uiScale);
 
             if (_isMapFreeEnabled)
@@ -427,7 +427,7 @@ namespace LoneArenaDmaRadar.UI
 
         private static void DrawStatusMessage(SKCanvas canvas, AppState state)
         {
-            float uiScale = UIScale;
+            float uiScale = RadarScale;
             var bounds = new SKRect(0, 0, _window.Size.X / uiScale, _window.Size.Y / uiScale);
 
             // Base text (no trailing dots) and how many dots to draw
@@ -635,7 +635,7 @@ namespace LoneArenaDmaRadar.UI
                 return;
 
             var pos = mouse.Position;
-            float uiScale = UIScale;
+            float uiScale = RadarScale;
             var mousePos = new Vector2(pos.X / uiScale, pos.Y / uiScale);
 
             if (button == MouseButton.Left)
@@ -682,7 +682,7 @@ namespace LoneArenaDmaRadar.UI
                 return;
             }
 
-            float uiScale = UIScale;
+            float uiScale = RadarScale;
             var mousePos = new Vector2(position.X / uiScale, position.Y / uiScale);
 
             if (_mouseDown && _isMapFreeEnabled)
@@ -1229,28 +1229,28 @@ namespace LoneArenaDmaRadar.UI
             colors[(int)ImGuiCol.ModalWindowDimBg] = new Vector4(0f, 0f, 0f, 0.65f);
 
             _lastImGuiUiScale = 1f;
-            ApplyImGuiScale(Config.UI.UIScale);
+            ApplyImGuiScale(Config.UI.MenuScale);
         }
 
         private static float _lastImGuiUiScale = 1f;
 
-        private static void ApplyImGuiScale(float uiScale)
+        private static void ApplyImGuiScale(float menuScale)
         {
-            uiScale = Math.Clamp(uiScale, 0.5f, 2.0f);
+            menuScale = Math.Clamp(menuScale, 0.5f, 2.0f);
 
             var io = ImGui.GetIO();
-            io.FontGlobalScale = uiScale;
+            io.FontGlobalScale = menuScale;
 
             float last = _lastImGuiUiScale;
             if (last <= 0f)
                 last = 1f;
-            float ratio = uiScale / last;
+            float ratio = menuScale / last;
 
             var style = ImGui.GetStyle();
             style.ScaleAllSizes(ratio);
             style.WindowMinSize = new Vector2(Math.Max(1f, style.WindowMinSize.X), Math.Max(1f, style.WindowMinSize.Y));
 
-            _lastImGuiUiScale = uiScale;
+            _lastImGuiUiScale = menuScale;
         }
         #endregion
 
