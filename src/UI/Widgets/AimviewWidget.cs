@@ -108,7 +108,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
 
             try
             {
-                float uiScale = Math.Clamp(Program.Config.UI.UIScale, 0.5f, 2.0f);
+                float uiScale = Program.Config.UI.UIScale;
                 canvas.Save();
                 canvas.Scale(uiScale, uiScale);
 
