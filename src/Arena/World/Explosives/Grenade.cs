@@ -103,8 +103,8 @@ namespace LoneArenaDmaRadar.Arena.World.Explosives
             if (_isSmoke)
                 return;
             var circlePosition = Position.ToMapPos(mapParams.Map).ToZoomedPos(mapParams);
-            var size = 5f * Program.Config.UI.UIScale;
-            SKPaints.ShapeOutline.StrokeWidth = SKPaints.PaintExplosives.StrokeWidth + 2f * Program.Config.UI.UIScale;
+            const float size = 5f;
+            SKPaints.ShapeOutline.StrokeWidth = SKPaints.PaintExplosives.StrokeWidth + 2f;
             canvas.DrawCircle(circlePosition, size, SKPaints.ShapeOutline); // Draw outline
             canvas.DrawCircle(circlePosition, size, SKPaints.PaintExplosives); // draw LocalPlayer marker
         }

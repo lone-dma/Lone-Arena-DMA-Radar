@@ -251,21 +251,7 @@ namespace LoneArenaDmaRadar.UI.Panels
 
         public static void UpdateUIScale(float newScale)
         {
-            // Update Paints
-            SKPaints.TextOutline.StrokeWidth = 2f * newScale;
-            SKPaints.PaintLocalPlayer.StrokeWidth = 1.66f * newScale;
-            SKPaints.PaintTeammate.StrokeWidth = 1.66f * newScale;
-            SKPaints.PaintPlayer.StrokeWidth = 1.66f * newScale;
-            SKPaints.PaintBot.StrokeWidth = 1.66f * newScale;
-            SKPaints.PaintFocused.StrokeWidth = 1.66f * newScale;
-            SKPaints.PaintDeathMarker.StrokeWidth = 3f * newScale;
-            SKPaints.PaintTransparentBacker.StrokeWidth = 0.25f * newScale;
-            SKPaints.PaintExplosives.StrokeWidth = 3f * newScale;
-
-            // Fonts
-            SKFonts.UIRegular.Size = 12f * newScale;
-            SKFonts.UILarge.Size = 48f * newScale;
-
+            _ = newScale;
             RadarWindow.ApplyCustomImGuiStyle();
         }
 

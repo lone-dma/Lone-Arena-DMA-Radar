@@ -175,11 +175,11 @@ namespace LoneArenaDmaRadar.UI.Skia
             };
 
         /// <summary>
-        /// Gets a drawable 'Up Arrow'. IDisposable. Applies UI Scaling internally.
+        /// Gets a drawable 'Up Arrow'. IDisposable.
         /// </summary>
         public static SKPath GetUpArrow(this SKPoint point, float size = 6f, float offsetX = 0f, float offsetY = 0f)
         {
-            float scale = size * Program.Config.UI.UIScale;
+            float scale = size;
             float tx = point.X + offsetX;
             float ty = point.Y + offsetY;
 
@@ -195,11 +195,11 @@ namespace LoneArenaDmaRadar.UI.Skia
 
 
         /// <summary>
-        /// Gets a drawable 'Down Arrow'. IDisposable. Applies UI Scaling internally.
+        /// Gets a drawable 'Down Arrow'. IDisposable.
         /// </summary>
         public static SKPath GetDownArrow(this SKPoint point, float size = 6f, float offsetX = 0f, float offsetY = 0f)
         {
-            float scale = size * Program.Config.UI.UIScale;
+            float scale = size;
             float tx = point.X + offsetX;
             float ty = point.Y + offsetY;
 
@@ -217,11 +217,8 @@ namespace LoneArenaDmaRadar.UI.Skia
         /// </summary>
         public static void DrawHazardMarker(this SKPoint zoomedMapPos, SKCanvas canvas)
         {
-            float scale = Program.Config.UI.UIScale;
-
             canvas.Save();
             canvas.Translate(zoomedMapPos.X, zoomedMapPos.Y);
-            canvas.Scale(scale, scale);
             canvas.DrawPath(_hazardPath, SKPaints.PaintExplosives); // Uses explosives paint for hazard marker
             canvas.Restore();
         }
