@@ -61,6 +61,8 @@ namespace LoneArenaDmaRadar.UI
         private static ArenaDmaConfig Config { get; } = Program.Config;
         public static IntPtr Handle => _window?.Native?.Win32?.Hwnd ?? IntPtr.Zero;
 
+        private static float UIScale => Math.Clamp(Config.UI.UIScale, 0.5f, 2.0f);
+
         internal static void Initialize()
         {
             var options = WindowOptions.Default;
@@ -146,7 +148,7 @@ namespace LoneArenaDmaRadar.UI
                 }
             }
 
-            SettingsPanel.UpdateUIScale(Config.UI.UIScale); // Also calls ApplyCustomImGuiStyle()
+            ApplyCustomImGuiStyle(); // ImGui theme/size is applied here; Skia uses per-frame canvas scaling.
 
             _load = OnLoadAsync(); // Load remaining modules and UI components asynchronously
             _window.Update += OnLoadAsync_Update;
@@ -333,6 +335,12 @@ namespace LoneArenaDmaRadar.UI
             var canvas = _skSurface.Canvas;
             try
             {
+                // Global UI scaling: scale the entire Skia canvas once per frame.
+                // Drawing code should use constant sizes; input coordinates must be adjusted separately.
+                float uiScale = UIScale;
+                canvas.Save();
+                canvas.Scale(uiScale, uiScale);
+
                 if (Program.State == AppState.InRaid && LocalPlayer is LocalPlayer localPlayer && EftMapManager.LoadMap(MapID) is IEftMap map)
                 {
                     DrawRadar(canvas, localPlayer, map);
@@ -344,6 +352,7 @@ namespace LoneArenaDmaRadar.UI
             }
             finally
             {
+                canvas.Restore();
                 canvas.Flush();
                 _grContext.Flush();
             }
@@ -363,7 +372,9 @@ namespace LoneArenaDmaRadar.UI
 
             // Get map parameters
             EftMapParams mapParams;
-            var canvasSize = new SKSize(_window.Size.X, _window.Size.Y);
+            // Canvas is globally scaled, so provide pre-scaled logical size to map/layout.
+            float uiScale = UIScale;
+            var canvasSize = new SKSize(_window.Size.X / uiScale, _window.Size.Y / uiScale);
 
             if (_isMapFreeEnabled)
             {
@@ -416,7 +427,8 @@ namespace LoneArenaDmaRadar.UI
 
         private static void DrawStatusMessage(SKCanvas canvas, AppState state)
         {
-            var bounds = new SKRect(0, 0, _window.Size.X, _window.Size.Y);
+            float uiScale = UIScale;
+            var bounds = new SKRect(0, 0, _window.Size.X / uiScale, _window.Size.Y / uiScale);
 
             // Base text (no trailing dots) and how many dots to draw
             string baseText;
@@ -623,7 +635,8 @@ namespace LoneArenaDmaRadar.UI
                 return;
 
             var pos = mouse.Position;
-            var mousePos = new Vector2(pos.X, pos.Y);
+            float uiScale = UIScale;
+            var mousePos = new Vector2(pos.X / uiScale, pos.Y / uiScale);
 
             if (button == MouseButton.Left)
             {
@@ -669,7 +682,8 @@ namespace LoneArenaDmaRadar.UI
                 return;
             }
 
-            var mousePos = new Vector2(position.X, position.Y);
+            float uiScale = UIScale;
+            var mousePos = new Vector2(position.X / uiScale, position.Y / uiScale);
 
             if (_mouseDown && _isMapFreeEnabled)
             {

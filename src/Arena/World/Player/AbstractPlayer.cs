@@ -586,7 +586,7 @@ namespace LoneArenaDmaRadar.Arena.World.Player
         {
             var paints = GetPaints();
 
-            float scale = 1.65f * Program.Config.UI.UIScale;
+            const float scale = 1.65f;
 
             canvas.Save();
             canvas.Translate(point.X, point.Y);
@@ -621,7 +621,7 @@ namespace LoneArenaDmaRadar.Arena.World.Player
         /// </summary>
         private static void DrawDeathMarker(SKCanvas canvas, SKPoint point)
         {
-            float scale = Program.Config.UI.UIScale;
+            const float scale = 1f;
 
             canvas.Save();
             canvas.Translate(point.X, point.Y);
@@ -636,7 +636,7 @@ namespace LoneArenaDmaRadar.Arena.World.Player
         private void DrawPlayerText(SKCanvas canvas, SKPoint point, IList<string> lines)
         {
             var paints = GetPaints();
-            point.Offset(9.5f * Program.Config.UI.UIScale, 0);
+            point.Offset(9.5f, 0);
             foreach (var line in lines)
             {
                 if (string.IsNullOrEmpty(line?.Trim()))
