@@ -23,6 +23,7 @@ using LoneArenaDmaRadar.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Silk.NET.Input.Glfw;
 using Silk.NET.Windowing.Glfw;
+using System.Diagnostics.CodeAnalysis;
 using Velopack;
 using Velopack.Sources;
 
@@ -86,8 +87,7 @@ namespace LoneArenaDmaRadar
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Name, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxOptions.DefaultDesktopOnly);
-                throw;
+                HandleFatalError(ex);
             }
         }
         static void Main()
@@ -99,12 +99,19 @@ namespace LoneArenaDmaRadar
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Name, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxOptions.DefaultDesktopOnly);
-                throw;
+                HandleFatalError(ex);
             }
         }
 
         #region Boilerplate
+
+        [DoesNotReturn]
+        private static void HandleFatalError(Exception ex)
+        {
+            string error = $"FATAL ERROR -> {ex}";
+            MessageBox.Show(error, Name, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxOptions.DefaultDesktopOnly);
+            Environment.FailFast(error);
+        }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e) => OnShutdown();
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

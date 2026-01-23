@@ -221,8 +221,8 @@ namespace LoneArenaDmaRadar
         /// <summary>
         /// FPGA Read Algorithm
         /// </summary>
-        [JsonPropertyName("fpgaAlgo")]
-        public FpgaAlgo FpgaAlgo { get; set; } = FpgaAlgo.Auto;
+        [JsonPropertyName("deviceStr")]
+        public string DeviceStr { get; set; } = "fpga";
 
         /// <summary>
         /// Use a Memory Map for FPGA DMA Connection.
