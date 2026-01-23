@@ -55,7 +55,6 @@ namespace LoneArenaDmaRadar.Misc.JSON
     [JsonSerializable(typeof(UIConfig))]
     [JsonSerializable(typeof(AimviewWidgetConfig))]
     // Enums
-    [JsonSerializable(typeof(FpgaAlgo))]
     [JsonSerializable(typeof(ColorPickerOption))]
     [JsonSerializable(typeof(Win32VirtualKey))]
     // Dictionary types

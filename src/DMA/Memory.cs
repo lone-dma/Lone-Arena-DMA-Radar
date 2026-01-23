@@ -74,7 +74,7 @@ namespace LoneArenaDmaRadar.DMA
         {
             await Task.Run(() =>
             {
-                FpgaAlgo fpgaAlgo = Program.Config.DMA.FpgaAlgo;
+                string deviceStr = Program.Config.DMA.DeviceStr;
                 bool useMemMap = Program.Config.DMA.MemMapEnabled;
                 Logging.WriteLine("Initializing DMA...");
                 /// Check MemProcFS Versions...
@@ -86,8 +86,7 @@ namespace LoneArenaDmaRadar.DMA
                 {
                     "-norefresh",
                     "-device",
-                    fpgaAlgo is FpgaAlgo.Auto ?
-                        "fpga" : $"fpga://algo={(int)fpgaAlgo}",
+                    deviceStr,
                     "-waitinitialize"
                 };
                 if (Logging.UseConsole)
@@ -149,9 +148,11 @@ namespace LoneArenaDmaRadar.DMA
                 catch (Exception ex)
                 {
                     throw new InvalidOperationException(
-                    "DMA Initialization Failed!\n" +
-                    $"Reason: {ex.Message}\n" +
-                    $"{versions}\n\n" +
+                    "DMA Initialization Failed!\n\n" +
+                    $"Reason: {ex.Message}\n\n" +
+                    $"Init Args: {string.Join(' ', initArgs)}\n" +
+                    $"Vmm Version: {vmmVersion}\n" +
+                    $"Leechcore Version: {lcVersion}\n\n" +
                     "===TROUBLESHOOTING===\n" +
                     "1. Cold boot (power off/power on) both your Game PC / Radar PC (This USUALLY fixes it).\n" +
                     "2. Reseat all cables/connections and make sure they are secure. Try a different USB Port.\n" +
