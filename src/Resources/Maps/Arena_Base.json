@@ -1,11 +1,11 @@
 {
-	"mapID": ["Arena_Shoreline"],
-	"name" : "Smuggler's Base",
+	"mapID": [ "Arena_Shoreline" ],
+	"name": "Smuggler's Base",
 	"x": 706,
 	"y": -131,
 	"scale": 1.00,
-	"svgScale" : 4.00,
-	"disableDimming" : true,
+	"rasterScale": 4.00,
+	"disableDimming": true,
 	"mapLayers": [
 		{
 			"minHeight": null,
