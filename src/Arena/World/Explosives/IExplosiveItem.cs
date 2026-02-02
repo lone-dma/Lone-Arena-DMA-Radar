@@ -41,6 +41,6 @@ namespace LoneArenaDmaRadar.Arena.World.Explosives
         /// <summary>
         /// Refresh the state of the explosive item.
         /// </summary>
-        void OnRefresh(VmmScatter scatter);
+        void OnRefresh(VmmScatterManaged scatter);
     }
 }

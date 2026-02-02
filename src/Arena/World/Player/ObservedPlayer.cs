@@ -165,7 +165,7 @@ namespace LoneArenaDmaRadar.Arena.World.Player
         /// <summary>
         /// Refresh Player Information.
         /// </summary>
-        public override void OnRegRefresh(VmmScatter scatter, ISet<ulong> registered, bool? isActiveParam = null)
+        public override void OnRegRefresh(VmmScatterManaged scatter, ISet<ulong> registered, bool? isActiveParam = null)
         {
             if (isActiveParam is not bool isActive)
                 isActive = registered.Contains(this);
