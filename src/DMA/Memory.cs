@@ -51,7 +51,7 @@ namespace LoneArenaDmaRadar.DMA
         private const string GAME_PROCESS_NAME = "EscapeFromTarkovArena.exe";
         internal const uint MAX_READ_SIZE = 0x1000u * 1500u;
         private static readonly string _mmap = Path.Combine(Program.ConfigPath.FullName, "mmap.txt");
-        private static Vmm _vmm;
+        private static Vmm _vmm = null!;
         private static InputManager _input;
         private static uint _pid;
 
