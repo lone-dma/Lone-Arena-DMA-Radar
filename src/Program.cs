@@ -1,4 +1,9 @@
-﻿global using SDK;
+﻿/*
+ * Lone Arena DMA Radar - Copyright (c) 2026 Lone DMA
+ * Licensed under GNU AGPLv3. See https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+global using SDK;
 global using SkiaSharp;
 global using System.Buffers;
 global using System.Collections;
