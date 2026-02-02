@@ -239,7 +239,7 @@ namespace LoneArenaDmaRadar
         [JsonPropertyName("fps")]
         public int FPS { get; set; } = 60;
 
-    /// <summary>
+        /// <summary>
         /// Radar Scale Value (0.5-2.0 , default: 1.0)
         /// Applies to the Radar map and Aimview widget.
         /// </summary>

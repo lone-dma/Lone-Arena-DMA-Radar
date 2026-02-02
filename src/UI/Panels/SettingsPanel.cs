@@ -30,7 +30,6 @@ using ImGuiNET;
 using LoneArenaDmaRadar.Misc.JSON;
 using LoneArenaDmaRadar.UI.ColorPicker;
 using LoneArenaDmaRadar.UI.Hotkeys;
-using LoneArenaDmaRadar.UI.Skia;
 
 namespace LoneArenaDmaRadar.UI.Panels
 {
