@@ -70,6 +70,11 @@ namespace LoneArenaDmaRadar.UI.Widgets
             int width = _pendingWidth;
             int height = _pendingHeight;
 
+            // Apply global UI scale
+            float scale = Program.Config.UI.RadarScale;
+            int scaledWidth = (int)(width / scale);
+            int scaledHeight = (int)(height / scale);
+
             // Bind our FBO for Skia rendering
             _gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
             _gl.Viewport(0, 0, (uint)width, (uint)height);
@@ -80,12 +85,9 @@ namespace LoneArenaDmaRadar.UI.Widgets
 
             // Draw to Skia surface
             var canvas = _surface.Canvas;
-
+            canvas.Save();
             try
             {
-                // Apply global UI scale
-                float scale = Program.Config.UI.RadarScale;
-                canvas.Save();
                 canvas.Scale(scale, scale);
 
                 if (Program.State == AppState.InRaid && LocalPlayer is LocalPlayer localPlayer)
@@ -94,10 +96,10 @@ namespace LoneArenaDmaRadar.UI.Widgets
                     UpdateMatrix(localPlayer);
 
                     // Draw players
-                    DrawPlayers(canvas, localPlayer, width / scale, height / scale);
+                    DrawPlayers(canvas, localPlayer, scaledWidth, scaledHeight);
 
                     // Draw crosshair
-                    DrawCrosshair(canvas, width / scale, height / scale);
+                    DrawCrosshair(canvas, scaledWidth, scaledHeight);
                 }
             }
             catch (Exception ex)
@@ -187,7 +189,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
             _camPos = localPlayer.Position;
         }
 
-        private static void DrawPlayers(SKCanvas canvas, LocalPlayer localPlayer, float width, float height)
+        private static void DrawPlayers(SKCanvas canvas, LocalPlayer localPlayer, int width, int height)
         {
             var players = AllPlayers?
                 .Where(p => p.IsActive && p.IsAlive && p != localPlayer);
@@ -211,7 +213,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
             }
         }
 
-        private static void DrawCrosshair(SKCanvas canvas, float width, float height)
+        private static void DrawCrosshair(SKCanvas canvas, int width, int height)
         {
             float centerX = width / 2f;
             float centerY = height / 2f;
@@ -238,7 +240,7 @@ namespace LoneArenaDmaRadar.UI.Widgets
             };
         }
 
-        private static bool WorldToScreen(in Vector3 world, float width, float height, out SKPoint scr)
+        private static bool WorldToScreen(in Vector3 world, int width, int height, out SKPoint scr)
         {
             scr = default;
 
