@@ -564,6 +564,15 @@ namespace LoneArenaDmaRadar.DMA
         #region Misc
 
         /// <summary>
+        /// Close the FPGA connection.
+        /// </summary>
+        public static void Close()
+        {
+            _vmm?.Dispose();
+            _vmm = null!;
+        }
+
+        /// <summary>
         /// Creates a new <see cref="VmmScatterMap{T}"/>.
         /// </summary>
         /// <returns></returns>

@@ -134,6 +134,7 @@ namespace LoneArenaDmaRadar
         private static void OnShutdown()
         {
             Config.Save();
+            Memory.Close();
             Logging.WriteLine("Exiting...");
         }
 
