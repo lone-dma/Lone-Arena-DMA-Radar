@@ -595,17 +595,17 @@ namespace LoneArenaDmaRadar.DMA
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static VmmScatterMap<VmmScatterManaged> CreateScatterMap() =>
-            new VmmScatterMap<VmmScatterManaged>(_vmm, _pid);
+        public static VmmScatterMap CreateScatterMap() =>
+            new VmmScatterMap(_vmm, _pid);
 
         /// <summary>
-        /// Creates a new <see cref="VmmScatterManaged"/>.
+        /// Creates a new <see cref="VmmScatter"/>.
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static VmmScatterManaged CreateScatter(VmmFlags flags = VmmFlags.NONE) =>
-            new VmmScatterManaged(_vmm, _pid, flags);
+        public static VmmScatter CreateScatter(VmmFlags flags = VmmFlags.NONE) =>
+            new VmmScatter(_vmm, _pid, flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong FindSignature(string signature)

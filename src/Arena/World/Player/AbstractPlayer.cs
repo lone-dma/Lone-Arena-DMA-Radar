@@ -364,7 +364,7 @@ namespace LoneArenaDmaRadar.Arena.World.Player
         /// <param name="scatter"></param>
         /// <param name="registered"></param>
         /// <param name="isActiveParam"></param>
-        public virtual void OnRegRefresh(VmmScatterManaged scatter, ISet<ulong> registered, bool? isActiveParam = null)
+        public virtual void OnRegRefresh(VmmScatter scatter, ISet<ulong> registered, bool? isActiveParam = null)
         {
             if (isActiveParam is not bool isActive)
                 isActive = registered.Contains(this);
@@ -417,7 +417,7 @@ namespace LoneArenaDmaRadar.Arena.World.Player
         /// Executed on each Realtime Loop.
         /// </summary>
         /// <param name="index">Scatter read index dedicated to this player.</param>
-        public virtual void OnRealtimeLoop(VmmScatterManaged scatter)
+        public virtual void OnRealtimeLoop(VmmScatter scatter)
         {
             scatter.PrepareReadValue<Vector2>(RotationAddress); // Rotation
             scatter.PrepareReadArray<TrsX>(SkeletonRoot.VerticesAddr, SkeletonRoot.Count); // Transform Vertices
@@ -461,7 +461,7 @@ namespace LoneArenaDmaRadar.Arena.World.Player
         /// </summary>
         /// <param name="round1">Index (round 1)</param>
         /// <param name="round2">Index (round 2)</param>
-        public void OnValidateTransforms(VmmScatterManaged round1, VmmScatterManaged round2)
+        public void OnValidateTransforms(VmmScatter round1, VmmScatter round2)
         {
             round1.PrepareReadPtr(SkeletonRoot.TransformInternal + UnitySDK.TransformInternal.TransformAccess); // Bone Hierarchy
             round1.Completed += (sender, s1) =>

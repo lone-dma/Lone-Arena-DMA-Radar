@@ -48,7 +48,7 @@ namespace LoneArenaDmaRadar.Arena.World.Explosives
         /// <summary>
         /// Get the updated Position of this Grenade.
         /// </summary>
-        public void OnRefresh(VmmScatterManaged scatter)
+        public void OnRefresh(VmmScatter scatter)
         {
             if (_isSmoke)
             {
