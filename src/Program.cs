@@ -117,15 +117,12 @@ namespace LoneArenaDmaRadar
             Environment.FailFast(error);
         }
 
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e) => OnShutdown();
-
-        private static void OnShutdown()
+        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
             Logging.WriteLine("Process exiting...");
             Config.Save();
             Memory.Close();
         }
-
         /// <summary>
         /// Sets up the Dependency Injection container for the application.
         /// </summary>
