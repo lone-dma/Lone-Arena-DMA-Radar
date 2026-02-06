@@ -59,12 +59,7 @@ namespace LoneArenaDmaRadar.UI
             }
 
             _window = Window.Create(options);
-
             _window.Load += OnLoad;
-            _window.Render += OnRender;
-            _window.Resize += OnResize;
-            _window.Closing += OnClosing;
-            _window.StateChanged += OnStateChanged;
 
             // Start Dispatcher, and Set Synchronization Context
             Dispatcher = new SilkDispatcher(_window);
@@ -129,6 +124,10 @@ namespace LoneArenaDmaRadar.UI
 
             _load = OnLoadAsync(); // Load remaining modules and UI components asynchronously
             _window.Update += OnLoadAsync_Update;
+            _window.Render += OnRender;
+            _window.Resize += OnResize;
+            _window.Closing += OnClosing;
+            _window.StateChanged += OnStateChanged;
         }
 
         private static void OnLoadAsync_Update(double delta)
