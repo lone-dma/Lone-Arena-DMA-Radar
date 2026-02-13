@@ -52,12 +52,12 @@
     <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0" />
     <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.23.0" />
     <PackageReference Include="Silk.NET.Windowing" Version="2.23.0" />
-    <PackageReference Include="SkiaSharp" Version="3.119.1" />
+    <PackageReference Include="SkiaSharp" Version="3.119.2" />
 	<PackageReference Include="Collections.Pooled.V2" Version="2.2.2" />
-	<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
+	<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.3.0" />
 	<PackageReference Include="Svg.Skia" Version="3.4.1" />
 	<PackageReference Include="Velopack" Version="0.0.1298" />
-	<PackageReference Include="VmmSharpEx" Version="3.200.11" />
+	<PackageReference Include="VmmSharpEx" Version="3.200.12" />
 	<PackageReference Include="TwitchLib.Api" Version="3.10.2" />
   </ItemGroup>
 
